@@ -13,11 +13,16 @@ jobs:
           java-version: "12.x"
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: "1.9.1+hotfix.2"
+          channel: 'master'
       - run: flutter pub get
       - run: flutter test
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Build flutter web
+        run: flutter build web
+      - name: Deploy flutter web
+        uses: JamesIves/github-pages-deploy-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BASE_BRANCH: master # The branch the action should deploy from.
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: build/web # The folder the action should deploy.
+        BUILD_SCRIPT: npm install && npm run-script build

@@ -26,7 +26,7 @@ class FeedRow extends StatelessWidget {
           ? FadeInImage.memoryNetwork(
               placeholder: kTransparentImage,
               image: feed.cover,
-              width: 100,
+              width: MediaQuery.of(context).size.width * 0.2,
               fit: BoxFit.cover,
             )
           : Image.memory(
