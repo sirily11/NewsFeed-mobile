@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:transparent_image/transparent_image.dart';
+
+class FeedRow extends StatelessWidget {
+  final Feed feed;
+
+  FeedRow({@required this.feed});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return DetailPage(
+            feed: feed,
+          );
+        }));
+      },
+      title: Text(feed.title),
+      subtitle: Text(
+          "${feed.publisher.name}\n${feed.postedTime.year}-${feed.postedTime.month}-${feed.postedTime.day}"),
+      trailing: FadeInImage.memoryNetwork(
+        placeholder: kTransparentImage,
+        image: feed.cover != null ? feed.cover : "",
+      ),
+    );
+  }
+}
