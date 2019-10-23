@@ -109,10 +109,10 @@ class FeedProvider with ChangeNotifier {
     }
   }
 
-  set currentSelectionIndex(int selection) {
+  Future setCurrentSelectionIndex(int selection) async {
     this._currentSelection = selection;
-    this.fetchFeeds();
     notifyListeners();
+    await this.fetchFeeds();
   }
 
   int get currentSelectionIndex => this._currentSelection;

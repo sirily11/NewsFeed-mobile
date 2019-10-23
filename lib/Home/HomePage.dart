@@ -69,8 +69,10 @@ class SettingPage extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: GestureDetector(
-            onTap: () {
-              provider.currentSelectionIndex = index;
+            onTap: () async {
+              await provider.setCurrentSelectionIndex(index);
+              var control = Provider.of<HomeControlProvider>(context);
+              control.currentIndex = 0;
             },
             child: Container(
               color: provider.currentSelectionIndex == index

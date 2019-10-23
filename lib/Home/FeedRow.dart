@@ -22,10 +22,16 @@ class FeedRow extends StatelessWidget {
       title: Text(feed.title),
       subtitle: Text(
           "${feed.publisher.name}\n${feed.postedTime.year}-${feed.postedTime.month}-${feed.postedTime.day}"),
-      trailing: FadeInImage.memoryNetwork(
-        placeholder: kTransparentImage,
-        image: feed.cover != null ? feed.cover : "",
-      ),
+      trailing: feed.cover != null
+          ? FadeInImage.memoryNetwork(
+              placeholder: kTransparentImage,
+              image: feed.cover,
+              width: 100,
+              fit: BoxFit.cover,
+            )
+          : Image.memory(
+              kTransparentImage,
+            ),
     );
   }
 }
