@@ -13,16 +13,14 @@ jobs:
           java-version: "12.x"
       - uses: subosito/flutter-action@v1
         with:
-          channel: 'master'
+          channel: "master"
       - run: flutter pub get
       - run: flutter test
-      - name: Build flutter web
-        run: flutter build web
       - name: Deploy flutter web
         uses: JamesIves/github-pages-deploy-action@master
         env:
-        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-        BASE_BRANCH: master # The branch the action should deploy from.
-        BRANCH: gh-pages # The branch the action should deploy to.
-        FOLDER: build/web # The folder the action should deploy.
-        BUILD_SCRIPT: npm install && npm run-script build
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BASE_BRANCH: master # The branch the action should deploy from.
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: build/web # The folder the action should deploy.
+          BUILD_SCRIPT: flutter build web
