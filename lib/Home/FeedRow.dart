@@ -12,6 +12,7 @@ class FeedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      key: Key(feed.title),
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return DetailPage(

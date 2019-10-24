@@ -8,7 +8,7 @@ class FeedProvider with ChangeNotifier {
       "https://toebpt5v9j.execute-api.us-east-1.amazonaws.com/dev/news-feed/news/";
   static const publisherURL =
       "https://toebpt5v9j.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
-
+  Dio client;
   bool isLoading = false;
   String nextLink;
   int _currentSelection = 0;
@@ -17,7 +17,13 @@ class FeedProvider with ChangeNotifier {
   final ScrollController scrollController = ScrollController();
   final GlobalKey<ScaffoldState> key = GlobalKey();
 
-  FeedProvider() {
+  FeedProvider({Dio client}) {
+    if (client == null) {
+      this.client = Dio();
+    } else {
+      this.client = client;
+    }
+
     this.fetchFeeds();
     this.fetchPublishers();
 
@@ -25,7 +31,7 @@ class FeedProvider with ChangeNotifier {
       if (scrollController.position.pixels ==
               scrollController.position.maxScrollExtent &&
           nextLink != null) {
-        fetchMore();
+        await fetchMore();
         key.currentState.showSnackBar(
           SnackBar(
             content: Text("Loading More"),
@@ -39,7 +45,7 @@ class FeedProvider with ChangeNotifier {
   /// Fetch publishers from server
   Future fetchPublishers() async {
     try {
-      Response<List> response = await Dio().get(publisherURL);
+      Response<List> response = await client.get(publisherURL);
       publishers = List.from(publishers)
         ..addAll(response.data.map((p) => Publisher.fromJson(p)).toList());
       notifyListeners();
@@ -58,7 +64,7 @@ class FeedProvider with ChangeNotifier {
         url = "$url?publisher=${publishers[_currentSelection].id}";
       }
 
-      Response<Map<String, dynamic>> response = await Dio().get(url);
+      Response<Map<String, dynamic>> response = await client.get(url);
       List results = response.data['results']
           .map((r) => r as Map<String, dynamic>)
           .toList();
@@ -77,11 +83,8 @@ class FeedProvider with ChangeNotifier {
       String url = nextLink ?? baseURL;
       isLoading = true;
       notifyListeners();
-      if (_currentSelection > 0) {
-        url = "$url?publisher=${publishers[_currentSelection].id}";
-      }
 
-      Response<Map<String, dynamic>> response = await Dio().get(url);
+      Response<Map<String, dynamic>> response = await client.get(url);
       List results = response.data['results']
           .map((r) => r as Map<String, dynamic>)
           .toList();
@@ -98,7 +101,7 @@ class FeedProvider with ChangeNotifier {
   Future<List<Feed>> search(String keyword) async {
     try {
       var url = "$baseURL?search=$keyword";
-      Response response = await Dio().get(url);
+      Response response = await client.get(url);
       List results = response.data['results']
           .map((r) => r as Map<String, dynamic>)
           .toList();

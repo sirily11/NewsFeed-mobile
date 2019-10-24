@@ -29,6 +29,8 @@ class DetailPage extends StatelessWidget {
         ],
       ),
       body: Markdown(
+        key: Key("news_body"),
+        styleSheet: MarkdownStyleSheet(p: TextStyle(fontSize: 16)),
         data: feed.content ?? "Parsing Error",
       ),
       floatingActionButton: Card(

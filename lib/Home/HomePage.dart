@@ -29,7 +29,9 @@ class HomePage extends StatelessWidget {
             child: provider.isLoading
                 ? JumpingText("Loading")
                 : Text(
-                    provider.publishers[provider.currentSelectionIndex].name),
+                    provider.publishers[provider.currentSelectionIndex].name,
+                    key: Key("title"),
+                  ),
           )),
       body: AnimatedSwitcher(
         child: homeControlProvider.currentIndex == 0
@@ -43,9 +45,19 @@ class HomePage extends StatelessWidget {
           homeControlProvider.currentIndex = index;
         },
         items: [
-          BottomNavigationBarItem(title: Text("News"), icon: Icon(Icons.home)),
           BottomNavigationBarItem(
-              title: Text("Settings"), icon: Icon(Icons.settings))
+              title: Text(
+                "News",
+                key: Key("news"),
+              ),
+              icon: Icon(Icons.home)),
+          BottomNavigationBarItem(
+            title: Text(
+              "Settings",
+              key: Key("settings"),
+            ),
+            icon: Icon(Icons.settings),
+          )
         ],
       ),
     );
@@ -81,6 +93,7 @@ class SettingPage extends StatelessWidget {
               child: Center(
                   child: Text(
                 publisher.name,
+                key: Key(publisher.id.toString()),
                 style: TextStyle(fontSize: 20),
               )),
             ),
@@ -106,9 +119,20 @@ class NewsList extends StatelessWidget {
         await provider.fetchFeeds();
       },
       child: ListView.builder(
+        key: Key("news_list"),
         controller: provider.scrollController,
-        itemCount: provider.feeds.length,
+        itemCount: provider.nextLink != null
+            ? provider.feeds.length + 1
+            : provider.feeds.length,
         itemBuilder: (context, index) {
+          if (index == provider.feeds.length) {
+            return Center(
+              child: Text(
+                "More on bottom...",
+                key: Key("more_text"),
+              ),
+            );
+          }
           Feed feed = provider.feeds[index];
           return FeedRow(
             feed: feed,
@@ -164,15 +188,16 @@ class NewsSearch extends SearchDelegate<String> {
       return FutureBuilder<List<Feed>>(
         future: future,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return JumpingDotsProgressIndicator(
-              fontSize: 28,
-              numberOfDots: 3,
-            );
-          } else {
-            final suggestionList = snapshot.data;
-            return _buildListResults(suggestionList);
-          }
+          return AnimatedSwitcher(
+            duration: Duration(milliseconds: 300),
+            child: !snapshot.hasData
+                ? Center(
+                    child: CircularProgressIndicator(
+                      key: Key("search_progress"),
+                    ),
+                  )
+                : _buildListResults(snapshot.data),
+          );
         },
       );
     } else {
@@ -196,7 +221,14 @@ class NewsSearch extends SearchDelegate<String> {
   }
 
   Widget _buildListResults(List<Feed> feeds) {
+    if (feeds.length == 0) {
+      return Center(
+        child: Text("No result"),
+      );
+    }
+
     return ListView.builder(
+      key: Key("search_list"),
       itemCount: feeds.length,
       itemBuilder: (context, index) {
         Feed feed = feeds[index];
