@@ -42,6 +42,14 @@ class FeedProvider with ChangeNotifier {
     });
   }
 
+  void backToTop() {
+    scrollController.animateTo(0,
+        duration: Duration(
+          milliseconds: 300,
+        ),
+        curve: Curves.easeInOut);
+  }
+
   /// Fetch publishers from server
   Future fetchPublishers() async {
     try {

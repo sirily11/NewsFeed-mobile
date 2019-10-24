@@ -9,30 +9,81 @@ class FeedRow extends StatelessWidget {
 
   FeedRow({@required this.feed});
 
+  Widget _renderImage(context) {
+    if (feed.cover != null) {
+      return Expanded(
+        flex: 6,
+        child: FadeInImage.memoryNetwork(
+          placeholder: kTransparentImage,
+          image: feed.cover,
+          height: MediaQuery.of(context).size.height,
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      return Container();
+    }
+  }
+
+  Widget _renderText(context) {
+    return Expanded(
+      flex: 7,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              feed.title,
+              style: Theme.of(context).textTheme.subhead,
+            ),
+            Text(
+              "${feed.publisher.name}\n${feed.postedTime.toLocal()}",
+              style: Theme.of(context).textTheme.subtitle,
+            )
+          ],
+        )),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      key: Key(feed.title),
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return DetailPage(
-            feed: feed,
-          );
-        }));
-      },
-      title: Text(feed.title),
-      subtitle: Text(
-          "${feed.publisher.name}\n${feed.postedTime.year}-${feed.postedTime.month}-${feed.postedTime.day}"),
-      trailing: feed.cover != null
-          ? FadeInImage.memoryNetwork(
-              placeholder: kTransparentImage,
-              image: feed.cover,
-              width: MediaQuery.of(context).size.width * 0.2,
-              fit: BoxFit.cover,
-            )
-          : Image.memory(
-              kTransparentImage,
+    List<Widget> body = [];
+    if (feed.id.isOdd) {
+      body = [_renderText(context), _renderImage(context)];
+    } else {
+      body = [_renderImage(context), _renderText(context)];
+    }
+
+    return Container(
+      height: feed.cover != null ? 180 : 120,
+      width: MediaQuery.of(context).size.width,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return DetailPage(
+                feed: feed,
+              );
+            }));
+          },
+          child: Card(
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
             ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: body,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

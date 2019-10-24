@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -15,7 +16,13 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       key: provider.key,
-      appBar: AppBar(
+      appBar: CustomAppBar(
+        onTap: () {
+          if (homeControlProvider.currentIndex == 0) {
+            provider.backToTop();
+          }
+        },
+        appBar: AppBar(
           actions: <Widget>[
             IconButton(
               icon: Icon(Icons.search),
@@ -32,7 +39,9 @@ class HomePage extends StatelessWidget {
                     provider.publishers[provider.currentSelectionIndex].name,
                     key: Key("title"),
                   ),
-          )),
+          ),
+        ),
+      ),
       body: AnimatedSwitcher(
         child: homeControlProvider.currentIndex == 0
             ? NewsList(provider: provider)
