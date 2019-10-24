@@ -1,16 +1,11 @@
-# newsfeed_mobile
+# NewsFeed App
 
-A new Flutter project.
+This is a news feed app which will allow user to read news from any website. This mobile app is building with flutter which has ios, android, and web version of the app. You can check the demo with this [demo](https://sirily11.github.io/NewsFeed-mobile/#/).
 
-## Getting Started
+If you want to add more websites support, go to this [link](https://github.com/sirily11/NewsFeed)
 
-This project is a starting point for a Flutter application.
+# Suported websites:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- New York Times Chinese
+- Gamersky
+- BBC Chinese
