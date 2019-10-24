@@ -22,7 +22,9 @@ dependencies:
   dio: ^3.0.3
   provider: ^3.1.0+1
   webview_flutter: ^0.3.15+1
-  flutter_markdown: ^0.3.0
+  flutter_markdown:
+    git:
+      url: https://github.com/sirily11/flutter_markdown.git
   shimmer: ^1.0.1
   transparent_image: ^1.0.0
   progress_indicators: ^0.1.4
