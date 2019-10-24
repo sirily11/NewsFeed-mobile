@@ -1,26 +1,58 @@
 import 'package:moor_flutter/moor_flutter.dart';
 
-part "feed.g.dart";
+part "FeedData.g.dart";
 
 class FavoriteFeed extends Table {
-  IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text()();
+  IntColumn get id => integer()();
+  TextColumn get title => text().nullable()();
   TextColumn get link => text()();
 
-  TextColumn get cover => text()();
+  TextColumn get cover => text().nullable()();
   TextColumn get content => text()();
-  RealColumn get sentiment => real()();
+  RealColumn get sentiment => real().nullable()();
   DateTimeColumn get postedTime => dateTime()();
-  IntColumn get publisher => integer().nullable()();
+  TextColumn get publiser => text()();
+  // IntColumn get publisher =>
+  //     integer().nullable().customConstraint("NULL REFERENCES publiser(id)")();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
-@DataClassName("Publisher")
-class FeedPublisher extends Table {
+class Publiser extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
 
-// this annotation tells moor to prepare a database class that uses both of the
-// tables we just defined. We'll see how to use that database class in a moment.
-@UseMoor(tables: [FavoriteFeed, FeedPublisher])
-class MyDatabase {}
+@UseMoor(tables: [FavoriteFeed])
+class MyDatabase extends _$MyDatabase {
+  MyDatabase()
+      : super(FlutterQueryExecutor.inDatabaseFolder(path: "db.sqlite"));
+
+  @override
+  int get schemaVersion => 1;
+
+  Future<List<FavoriteFeedData>> get allFavoriteFeed =>
+      select(favoriteFeed).get();
+
+  Future addFeed(FavoriteFeedData feed) {
+    return into(favoriteFeed).insert(feed);
+  }
+
+  Future deleteFeed(FavoriteFeedData feed) {
+    return delete(favoriteFeed).delete(feed);
+  }
+
+  Stream getFeedStream(FavoriteFeedData feed) {
+    return (select(favoriteFeed)..where((f) => f.id.equals(feed.id)))
+        .watchSingle();
+  }
+
+  Future<FavoriteFeedData> getFeed(FavoriteFeedData feed) {
+    return (select(favoriteFeed)..where((f) => f.id.equals(feed.id)))
+        .getSingle();
+  }
+}

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
+import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
@@ -9,6 +10,21 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatelessWidget {
+  /// Render app's main screen base on the current buttom nav
+  Widget _renderPage({context, provider}) {
+    HomeControlProvider homeControlProvider = Provider.of(context);
+    switch (homeControlProvider.currentIndex) {
+      case 1:
+        return StarFeedList();
+
+      case 2:
+        return SettingPage();
+
+      default:
+        return NewsList(provider: provider);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     FeedProvider provider = Provider.of(context);
@@ -43,9 +59,7 @@ class HomePage extends StatelessWidget {
         ),
       ),
       body: AnimatedSwitcher(
-        child: homeControlProvider.currentIndex == 0
-            ? NewsList(provider: provider)
-            : SettingPage(),
+        child: _renderPage(context: context, provider: provider),
         duration: Duration(milliseconds: 300),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -55,11 +69,19 @@ class HomePage extends StatelessWidget {
         },
         items: [
           BottomNavigationBarItem(
-              title: Text(
-                "News",
-                key: Key("news"),
-              ),
-              icon: Icon(Icons.home)),
+            title: Text(
+              "News",
+              key: Key("news"),
+            ),
+            icon: Icon(Icons.home),
+          ),
+          BottomNavigationBarItem(
+            title: Text(
+              "Favorite",
+              key: Key("favorite"),
+            ),
+            icon: Icon(Icons.star),
+          ),
           BottomNavigationBarItem(
             title: Text(
               "Settings",
@@ -245,14 +267,15 @@ class NewsSearch extends SearchDelegate<String> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (context) => DetailPage(
-                        feed: feed,
-                      )),
+                builder: (context) => DetailPage(
+                  feed: feed,
+                ),
+              ),
             );
           },
           title: Text(feed.title),
           subtitle: Text(feed.publisher.name),
-          trailing: Image.network(feed.cover ?? ""),
+          trailing: feed.cover != null ? Image.network(feed.cover) : null,
         );
       },
     );
