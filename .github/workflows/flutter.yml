@@ -19,6 +19,7 @@ jobs:
       - run: flutter config --enable-web
       - run: flutter pub get
       - run: flutter test
+      - run: flutter build web
       - name: Deploy flutter web
         uses: JamesIves/github-pages-deploy-action@master
         env:
@@ -26,4 +27,3 @@ jobs:
           BASE_BRANCH: master # The branch the action should deploy from.
           BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: build/web # The folder the action should deploy.
-          BUILD_SCRIPT: flutter build web
