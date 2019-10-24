@@ -34,7 +34,8 @@ class StarFeedList extends StatelessWidget {
                               link: feed.link,
                               id: feed.id,
                               publisher: Publisher(name: feed.publiser),
-                              sentiment: feed.sentiment),
+                              sentiment: feed.sentiment,
+                              postedTime: feed.postedTime),
                         ),
                       ),
                     );
