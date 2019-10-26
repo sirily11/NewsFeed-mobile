@@ -20,9 +20,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    this.fetchTabs();
+  }
+
+  fetchTabs() {
     Future.delayed(Duration(milliseconds: 30)).then((_) async {
       FeedProvider provider = Provider.of(context);
-      HomeControlProvider homeControlProvider = Provider.of(context);
       List<Publisher> publishers = await provider.fetchPublishers();
       setState(() {
         tabController = TabController(vsync: this, length: publishers.length);
@@ -47,7 +50,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       //   return SettingPage();
 
       default:
-        return NewsList(provider: provider);
+        return NewsList(
+          provider: provider,
+          refetch: this.fetchTabs,
+        );
     }
   }
 
@@ -139,15 +145,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 }
 
 class NewsList extends StatelessWidget {
-  const NewsList({
-    Key key,
-    @required this.provider,
-  }) : super(key: key);
+  final Function refetch;
+
+  const NewsList({Key key, @required this.provider, @required this.refetch})
+      : super(key: key);
 
   final FeedProvider provider;
 
   @override
   Widget build(BuildContext context) {
+    if (provider.isError) {
+      return Container(
+        width: MediaQuery.of(context).size.width,
+        child: Center(
+          child: Row(
+            children: <Widget>[
+              IconButton(
+                onPressed: () async {
+                  await provider.fetchPublishers();
+                  await provider.fetchFeeds();
+                },
+                icon: Icon(Icons.refresh),
+              ),
+              Text("Fetch content")
+            ],
+          ),
+        ),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: () async {
         await provider.fetchFeeds();

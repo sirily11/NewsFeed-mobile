@@ -16,6 +16,7 @@ class FeedProvider with ChangeNotifier {
   List<Publisher> publishers = [Publisher(name: "All", id: -1)];
   final ScrollController scrollController = ScrollController();
   final GlobalKey<ScaffoldState> key = GlobalKey();
+  bool isError = false;
 
   FeedProvider({Dio client}) {
     if (client == null) {
@@ -60,6 +61,8 @@ class FeedProvider with ChangeNotifier {
       return publishers;
     } catch (err) {
       print(err);
+      isError = true;
+      notifyListeners();
       return null;
     }
   }
@@ -80,10 +83,12 @@ class FeedProvider with ChangeNotifier {
           .toList();
       nextLink = response.data['next'];
       feeds = results.map((d) => Feed.fromJson(d)).toList();
-      isLoading = false;
-      notifyListeners();
     } catch (e) {
       print(e);
+      isError = true;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
