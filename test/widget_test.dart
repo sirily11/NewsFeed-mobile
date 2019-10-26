@@ -174,11 +174,13 @@ void main() {
         ),
       );
       await tester.pumpWidget(widget);
-      await tester.pumpAndSettle(Duration(milliseconds: 300));
+      await tester.pumpAndSettle();
       expect(find.text("Title 1"), findsOneWidget);
+      expect(find.text("CNN"), findsOneWidget);
       await tester.tap(find.byIcon(Icons.star));
       await tester.pump();
       expect(find.byKey(Key("star-list")), findsOneWidget);
+      expect(find.text("CNN"), findsNothing);
     });
   });
 

@@ -92,7 +92,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     key: Key("title"),
                   ),
           ),
-          bottom: tabController != null
+          bottom: tabController != null && homeControlProvider.currentIndex == 0
               ? TabBar(
                   indicator: BubbleTabIndicator(
                     indicatorHeight: 25,
