@@ -1,3 +1,4 @@
+import 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
@@ -9,7 +10,32 @@ import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  TabController tabController;
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 30)).then((_) async {
+      FeedProvider provider = Provider.of(context);
+      HomeControlProvider homeControlProvider = Provider.of(context);
+      List<Publisher> publishers = await provider.fetchPublishers();
+      setState(() {
+        tabController = TabController(vsync: this, length: publishers.length);
+      });
+
+      tabController.addListener(() async {
+        if (tabController.indexIsChanging) {
+          await provider.setCurrentSelectionIndex(tabController.index);
+        }
+      });
+    });
+  }
+
   /// Render app's main screen base on the current buttom nav
   Widget _renderPage({context, provider}) {
     HomeControlProvider homeControlProvider = Provider.of(context);
@@ -17,8 +43,8 @@ class HomePage extends StatelessWidget {
       case 1:
         return StarFeedList();
 
-      case 2:
-        return SettingPage();
+      // case 2:
+      //   return SettingPage();
 
       default:
         return NewsList(provider: provider);
@@ -56,6 +82,23 @@ class HomePage extends StatelessWidget {
                     key: Key("title"),
                   ),
           ),
+          bottom: tabController != null
+              ? TabBar(
+                  indicator: BubbleTabIndicator(
+                    indicatorHeight: 25,
+                    indicatorColor: Colors.blueAccent,
+                  ),
+                  controller: tabController,
+                  isScrollable: true,
+                  tabs: provider.publishers
+                      .map(
+                        (p) => Tab(
+                          child: Text(p.name),
+                        ),
+                      )
+                      .toList(),
+                )
+              : null,
         ),
       ),
       body: AnimatedSwitcher(
@@ -82,55 +125,15 @@ class HomePage extends StatelessWidget {
             ),
             icon: Icon(Icons.star),
           ),
-          BottomNavigationBarItem(
-            title: Text(
-              "Settings",
-              key: Key("settings"),
-            ),
-            icon: Icon(Icons.settings),
-          )
+          // BottomNavigationBarItem(
+          //   title: Text(
+          //     "Settings",
+          //     key: Key("settings"),
+          //   ),
+          //   icon: Icon(Icons.settings),
+          // )
         ],
       ),
-    );
-  }
-}
-
-class SettingPage extends StatelessWidget {
-  const SettingPage({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    FeedProvider provider = Provider.of(context);
-    return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2, crossAxisSpacing: 8),
-      itemCount: provider.publishers.length,
-      itemBuilder: (context, index) {
-        Publisher publisher = provider.publishers[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: GestureDetector(
-            onTap: () async {
-              await provider.setCurrentSelectionIndex(index);
-              var control = Provider.of<HomeControlProvider>(context);
-              control.currentIndex = 0;
-            },
-            child: Container(
-              color: provider.currentSelectionIndex == index
-                  ? Colors.teal
-                  : Colors.grey,
-              child: Center(
-                  child: Text(
-                publisher.name,
-                key: Key(publisher.id.toString()),
-                style: TextStyle(fontSize: 20),
-              )),
-            ),
-          ),
-        );
-      },
     );
   }
 }

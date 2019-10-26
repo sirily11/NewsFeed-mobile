@@ -25,7 +25,7 @@ class FeedProvider with ChangeNotifier {
     }
 
     this.fetchFeeds();
-    this.fetchPublishers();
+    // this.fetchPublishers();
 
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
@@ -51,14 +51,16 @@ class FeedProvider with ChangeNotifier {
   }
 
   /// Fetch publishers from server
-  Future fetchPublishers() async {
+  Future<List<Publisher>> fetchPublishers() async {
     try {
       Response<List> response = await client.get(publisherURL);
       publishers = List.from(publishers)
         ..addAll(response.data.map((p) => Publisher.fromJson(p)).toList());
       notifyListeners();
+      return publishers;
     } catch (err) {
       print(err);
+      return null;
     }
   }
 

@@ -78,14 +78,16 @@ class _DetailPageState extends State<DetailPage> {
         styleSheet: MarkdownStyleSheet(p: TextStyle(fontSize: 16)),
         data: widget.feed.content ?? "Parsing Error",
       ),
-      floatingActionButton: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "Sentiment Result\n${widget.feed.sentiment?.toStringAsFixed(3)}",
-          ),
-        ),
-      ),
+      floatingActionButton: widget.feed.sentiment != null
+          ? Card(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Sentiment Result\n${widget.feed.sentiment?.toStringAsFixed(3)}",
+                ),
+              ),
+            )
+          : Container(),
     );
   }
 }

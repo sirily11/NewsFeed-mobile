@@ -12,7 +12,7 @@ class FeedRow extends StatelessWidget {
   Widget _renderImage(context) {
     if (feed.cover != null) {
       return Expanded(
-        flex: 6,
+        flex: 10,
         child: FadeInImage.memoryNetwork(
           placeholder: kTransparentImage,
           image: feed.cover,
@@ -59,7 +59,7 @@ class FeedRow extends StatelessWidget {
     }
 
     return Container(
-      height: feed.cover != null ? 180 : 120,
+      height: feed.cover != null ? 280 : 120,
       width: MediaQuery.of(context).size.width,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
