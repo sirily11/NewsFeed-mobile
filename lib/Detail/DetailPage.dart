@@ -6,8 +6,9 @@ import 'package:newsfeed_mobile/models/Feed.dart';
 
 class DetailPage extends StatefulWidget {
   final Feed feed;
+  final MyDatabase myDatabase;
 
-  DetailPage({@required this.feed});
+  DetailPage({@required this.feed, this.myDatabase});
 
   @override
   _DetailPageState createState() => _DetailPageState();
@@ -16,20 +17,22 @@ class DetailPage extends StatefulWidget {
 class _DetailPageState extends State<DetailPage> {
   bool isStar = false;
   FavoriteFeedData feedData;
+  MyDatabase myDatabase;
 
   @override
   void initState() {
     super.initState();
+    myDatabase = widget.myDatabase ?? MyDatabase();
     feedData = FavoriteFeedData(
         id: widget.feed.id,
         title: widget.feed.title,
         content: widget.feed.content,
         cover: widget.feed.cover,
-        publiser: widget.feed.publisher.name,
+        publiser: widget.feed?.publisher?.name,
         link: widget.feed.link,
         postedTime: widget.feed.postedTime,
         sentiment: widget.feed.sentiment);
-    MyDatabase().getFeed(feedData).then((feed) {
+    myDatabase.getFeed(feedData).then((feed) {
       setState(() {
         isStar = feed != null;
       });
@@ -55,15 +58,18 @@ class _DetailPageState extends State<DetailPage> {
             icon: Icon(Icons.open_in_browser),
           ),
           IconButton(
+            key: Key("star_btn"),
             color: isStar ? Colors.yellow : null,
             onPressed: () async {
               if (isStar) {
-                await MyDatabase().deleteFeed(feedData);
+                await myDatabase.deleteFeed(feedData);
+
                 setState(() {
                   isStar = false;
                 });
               } else {
-                await MyDatabase().addFeed(feedData);
+                await myDatabase.addFeed(feedData);
+
                 setState(() {
                   isStar = true;
                 });

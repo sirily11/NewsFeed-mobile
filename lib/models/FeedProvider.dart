@@ -19,15 +19,8 @@ class FeedProvider with ChangeNotifier {
   bool isError = false;
 
   FeedProvider({Dio client}) {
-    if (client == null) {
-      this.client = Dio();
-    } else {
-      this.client = client;
-    }
-
-    this.fetchFeeds();
-    // this.fetchPublishers();
-
+    // For testing. Inject dependencies
+    this.client = client ?? Dio();
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
               scrollController.position.maxScrollExtent &&
@@ -83,6 +76,7 @@ class FeedProvider with ChangeNotifier {
           .toList();
       nextLink = response.data['next'];
       feeds = results.map((d) => Feed.fromJson(d)).toList();
+      isError = false;
     } catch (e) {
       print(e);
       isError = true;
@@ -95,11 +89,13 @@ class FeedProvider with ChangeNotifier {
   /// Fetch more feeds base on the category
   Future<void> fetchMore() async {
     try {
-      String url = nextLink ?? baseURL;
+      if (nextLink == null) {
+        return;
+      }
       isLoading = true;
       notifyListeners();
 
-      Response<Map<String, dynamic>> response = await client.get(url);
+      Response<Map<String, dynamic>> response = await client.get(nextLink);
       List results = response.data['results']
           .map((r) => r as Map<String, dynamic>)
           .toList();
@@ -113,6 +109,7 @@ class FeedProvider with ChangeNotifier {
     }
   }
 
+  /// Search feed
   Future<List<Feed>> search(String keyword) async {
     try {
       var url = "$baseURL?search=$keyword";
@@ -127,6 +124,7 @@ class FeedProvider with ChangeNotifier {
     }
   }
 
+  /// Set current category
   Future setCurrentSelectionIndex(int selection) async {
     this._currentSelection = selection;
     notifyListeners();

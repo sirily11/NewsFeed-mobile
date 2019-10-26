@@ -11,6 +11,10 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
+  /// This is the variable for testing. Set this to true if
+  /// you want to test if widget with error message
+  final isError;
+  HomePage({this.isError = false});
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -20,12 +24,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    this.fetchTabs();
+    if (!widget.isError) {
+      this.fetchTabs();
+    }
   }
 
   fetchTabs() {
     Future.delayed(Duration(milliseconds: 30)).then((_) async {
       FeedProvider provider = Provider.of(context);
+      await provider.fetchFeeds();
       List<Publisher> publishers = await provider.fetchPublishers();
       setState(() {
         tabController = TabController(vsync: this, length: publishers.length);
@@ -45,9 +52,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     switch (homeControlProvider.currentIndex) {
       case 1:
         return StarFeedList();
-
-      // case 2:
-      //   return SettingPage();
 
       default:
         return NewsList(
@@ -131,13 +135,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             icon: Icon(Icons.star),
           ),
-          // BottomNavigationBarItem(
-          //   title: Text(
-          //     "Settings",
-          //     key: Key("settings"),
-          //   ),
-          //   icon: Icon(Icons.settings),
-          // )
         ],
       ),
     );
@@ -162,8 +159,7 @@ class NewsList extends StatelessWidget {
             children: <Widget>[
               IconButton(
                 onPressed: () async {
-                  await provider.fetchPublishers();
-                  await provider.fetchFeeds();
+                  await this.refetch();
                 },
                 icon: Icon(Icons.refresh),
               ),

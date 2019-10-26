@@ -7,6 +7,7 @@ class StarFeedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<FavoriteFeedData>>(
+      key: Key("star-list"),
       future: MyDatabase().allFavoriteFeed,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
