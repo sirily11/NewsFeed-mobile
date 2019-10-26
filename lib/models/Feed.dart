@@ -8,6 +8,8 @@ class Feed {
   DateTime postedTime;
   Publisher publisher;
   int publisher_id;
+  /// if the feed has been save to local
+  bool isStar = false;
 
   Feed(
       {this.id,

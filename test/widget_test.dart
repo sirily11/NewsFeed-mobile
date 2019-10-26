@@ -19,6 +19,75 @@ void main() {
     Dio client = MockClient();
 
     setUpAll(() async {
+      final results = [
+        {
+          "id": 1,
+          "title": "Title 1",
+          "link": "https://a.com",
+          "cover": null,
+          "news_publisher": {"id": 1, "name": "游民星空"},
+          "content": null,
+          "sentiment": null,
+          "posted_time": "2019-10-26T05:04:31.468114Z",
+          "publisher": 1
+        },
+        {
+          "id": 2,
+          "title": "Title 2",
+          "link": "https://a.com",
+          "cover": null,
+          "news_publisher": {"id": 2, "name": "CNN"},
+          "content": "![]",
+          "sentiment": null,
+          "posted_time": "2019-10-26T05:04:31.238107Z",
+          "publisher": 2
+        },
+        {
+          "id": 3,
+          "title": "Title 3",
+          "link": "https://c.com",
+          "cover": null,
+          "news_publisher": {"id": 2, "name": "CNN"},
+          "content": null,
+          "sentiment": null,
+          "posted_time": "2019-10-26T05:04:31.238107Z",
+          "publisher": 2
+        },
+        {
+          "id": 4,
+          "title": "Title 4",
+          "link": "https://c.com",
+          "cover": null,
+          "news_publisher": {"id": 2, "name": "CNN"},
+          "content": null,
+          "sentiment": null,
+          "posted_time": "2019-10-26T05:04:31.238107Z",
+          "publisher": 2
+        },
+        {
+          "id": 5,
+          "title": "Title 5",
+          "link": "https://c.com",
+          "cover": null,
+          "news_publisher": {"id": 2, "name": "CNN"},
+          "content": null,
+          "sentiment": null,
+          "posted_time": "2019-10-26T05:04:31.238107Z",
+          "publisher": 2
+        },
+        {
+          "id": 6,
+          "title": "Title 6",
+          "link": "https://c.com",
+          "cover": null,
+          "news_publisher": {"id": 2, "name": "CNN"},
+          "content": null,
+          "sentiment": null,
+          "posted_time": "2019-10-26T05:04:31.238107Z",
+          "publisher": 2
+        }
+      ];
+
       when(client.get(FeedProvider.publisherURL))
           .thenAnswer((_) async => Response<List>(data: [
                 {"id": 1, "name": "游民星空"},
@@ -26,43 +95,13 @@ void main() {
               ]));
       when(client.get(FeedProvider.baseURL)).thenAnswer(
         (_) async => Response<Map<String, dynamic>>(
-          data: {
-            "results": [
-              {
-                "id": 1,
-                "title": "Title 1",
-                "link": "https://a.com",
-                "cover": null,
-                "news_publisher": {"id": 1, "name": "游民星空"},
-                "content": null,
-                "sentiment": null,
-                "posted_time": "2019-10-26T05:04:31.468114Z",
-                "publisher": 1
-              },
-              {
-                "id": 2,
-                "title": "Title 2",
-                "link": "https://a.com",
-                "cover": null,
-                "news_publisher": {"id": 2, "name": "CNN"},
-                "content": "![]",
-                "sentiment": null,
-                "posted_time": "2019-10-26T05:04:31.238107Z",
-                "publisher": 2
-              },
-              {
-                "id": 3,
-                "title": "Title 3",
-                "link": "https://c.com",
-                "cover": null,
-                "news_publisher": {"id": 2, "name": "CNN"},
-                "content": null,
-                "sentiment": null,
-                "posted_time": "2019-10-26T05:04:31.238107Z",
-                "publisher": 2
-              }
-            ]
-          },
+          data: {"results": results},
+        ),
+      );
+
+      when(client.get("${FeedProvider.baseURL}?publisher=${2}")).thenAnswer(
+        (_) async => Response<Map<String, dynamic>>(
+          data: {"results": results},
         ),
       );
     });
@@ -181,6 +220,43 @@ void main() {
       await tester.pump();
       expect(find.byKey(Key("star-list")), findsOneWidget);
       expect(find.text("CNN"), findsNothing);
+    });
+
+    testWidgets("When go to new category, the list should go to top",
+        (WidgetTester tester) async {
+      FeedProvider feedProvider = FeedProvider(client: client);
+      Widget widget = MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            builder: (_) => feedProvider,
+          ),
+          ChangeNotifierProvider(
+            builder: (_) => HomeControlProvider(),
+          )
+        ],
+        child: MaterialApp(
+          darkTheme: ThemeData.dark(),
+          theme: ThemeData(
+              primarySwatch: Colors.blue, brightness: Brightness.dark),
+          home: HomePage(),
+        ),
+      );
+      await tester.pumpWidget(widget);
+      await tester.pumpAndSettle();
+      var cnnTag = find.text("CNN");
+      await tester.drag(find.byKey(Key("news_list")), Offset(0, -400));
+      await tester.pumpAndSettle();
+      // When drag to the bottom of the list,
+      // only title 6 should be shown, and title 1 should be hidden
+      expect(find.text("Title 6"), findsOneWidget);
+      expect(find.text("Title 1"), findsNothing);
+      // go to new category
+      await tester.tap(cnnTag);
+      await tester.pumpAndSettle();
+      // Now, title 1 should be shown
+      // and title 6 should be hidden
+      expect(find.text("Title 1"), findsOneWidget);
+      expect(find.text("Title 6"), findsNothing);
     });
   });
 

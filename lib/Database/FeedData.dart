@@ -35,22 +35,27 @@ class MyDatabase extends _$MyDatabase {
   @override
   int get schemaVersion => 1;
 
+  /// get all feeds
   Future<List<FavoriteFeedData>> get allFavoriteFeed =>
       select(favoriteFeed).get();
 
+  /// Add feed to database
   Future addFeed(FavoriteFeedData feed) {
     return into(favoriteFeed).insert(feed);
   }
 
+  /// Delete feed from database
   Future deleteFeed(FavoriteFeedData feed) {
     return delete(favoriteFeed).delete(feed);
   }
 
+  /// Get feeds stream
   Stream getFeedStream(FavoriteFeedData feed) {
     return (select(favoriteFeed)..where((f) => f.id.equals(feed.id)))
         .watchSingle();
   }
 
+  /// Get feed by feed's id
   Future<FavoriteFeedData> getFeed(FavoriteFeedData feed) {
     return (select(favoriteFeed)..where((f) => f.id.equals(feed.id)))
         .getSingle();

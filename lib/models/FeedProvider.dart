@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 
 class FeedProvider with ChangeNotifier {
@@ -9,18 +10,22 @@ class FeedProvider with ChangeNotifier {
   static const publisherURL =
       "https://toebpt5v9j.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
   Dio client;
+  MyDatabase database;
   bool isLoading = false;
   String nextLink;
   int _currentSelection = 0;
   List<Feed> feeds = [];
   List<Publisher> publishers = [Publisher(name: "All", id: -1)];
+  bool isError = false;
   final ScrollController scrollController = ScrollController();
   final GlobalKey<ScaffoldState> key = GlobalKey();
-  bool isError = false;
 
-  FeedProvider({Dio client}) {
+  FeedProvider({Dio client, MyDatabase database}) {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
+    // this.database = database ?? MyDatabase();
+
+    // fetch more listener
     scrollController.addListener(() async {
       if (scrollController.position.pixels ==
               scrollController.position.maxScrollExtent &&
@@ -74,8 +79,16 @@ class FeedProvider with ChangeNotifier {
       List results = response.data['results']
           .map((r) => r as Map<String, dynamic>)
           .toList();
+
       nextLink = response.data['next'];
-      feeds = results.map((d) => Feed.fromJson(d)).toList();
+
+      /// get saved feeds
+
+      feeds = results.map((d) {
+        Feed feed = Feed.fromJson(d);
+
+        return feed;
+      }).toList();
       isError = false;
     } catch (e) {
       print(e);
@@ -127,6 +140,7 @@ class FeedProvider with ChangeNotifier {
   /// Set current category
   Future setCurrentSelectionIndex(int selection) async {
     this._currentSelection = selection;
+    this.backToTop();
     notifyListeners();
     await this.fetchFeeds();
   }

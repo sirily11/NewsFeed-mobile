@@ -1,16 +1,30 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
+import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 
 class MockClient extends Mock implements Dio {}
 
+class MockDatabase extends Mock implements MyDatabase {}
+
 void main() {
   group("Test Feed Provider", () {
     Dio client = MockClient();
+    MyDatabase database = MockDatabase();
     FeedProvider provider;
 
     setUpAll(() async {
+      when(database.allFavoriteFeed).thenAnswer((_) async => [
+            FavoriteFeedData(
+                id: 1,
+                title: "Title 1",
+                link: "",
+                content: "",
+                postedTime: DateTime.now(),
+                publiser: null)
+          ]);
+
       when(client.get(FeedProvider.publisherURL))
           .thenAnswer((_) async => Response<List>(data: [
                 {"id": 1, "name": "游民星空"},
@@ -57,7 +71,7 @@ void main() {
           },
         ),
       );
-      provider = FeedProvider(client: client);
+      provider = FeedProvider(client: client, database: database);
     });
 
     test("Test fetch", () async {
@@ -85,5 +99,13 @@ void main() {
       await provider.fetchFeeds();
       expect(provider.isError, false);
     });
+
+    test("If feed is in the database, then feed isStar should be true",
+        () async {
+      await provider.fetchFeeds();
+      expect(provider.feeds[0].isStar, true);
+      expect(provider.feeds[1].isStar, false);
+      expect(provider.feeds[2].isStar, false);
+    }, skip: true);
   });
 }
