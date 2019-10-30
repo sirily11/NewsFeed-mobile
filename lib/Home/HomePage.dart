@@ -174,7 +174,13 @@ class NewsList extends StatelessWidget {
       onRefresh: () async {
         await provider.fetchFeeds();
       },
-      child: ListView.builder(
+      child: ListView.separated(
+        separatorBuilder: (c, i) => Padding(
+          padding: const EdgeInsets.only(left: 40, right: 40),
+          child: Divider(
+            thickness: 2,
+          ),
+        ),
         key: Key("news_list"),
         controller: provider.scrollController,
         itemCount: provider.nextLink != null
