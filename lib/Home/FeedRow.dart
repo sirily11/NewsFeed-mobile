@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
-import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -12,12 +11,14 @@ class FeedRow extends StatelessWidget {
 
   Widget _renderImage(context) {
     if (feed.cover != null) {
-      return FadeInImage.memoryNetwork(
-        placeholder: kTransparentImage,
-        image: feed.cover,
-        width: MediaQuery.of(context).size.width,
-        height: 300,
-        fit: BoxFit.cover,
+      return Expanded(
+        flex: 10,
+        child: FadeInImage.memoryNetwork(
+          placeholder: kTransparentImage,
+          image: feed.cover,
+          height: MediaQuery.of(context).size.height,
+          fit: BoxFit.cover,
+        ),
       );
     } else {
       return Container();
@@ -25,24 +26,21 @@ class FeedRow extends StatelessWidget {
   }
 
   Widget _renderText(context) {
-    return Container(
+    return Expanded(
+      flex: 7,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
             child: Column(
-          crossAxisAlignment: feed.cover != null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
               feed.title,
-              style: feed.cover != null
-                  ? Theme.of(context).textTheme.title
-                  : Theme.of(context).textTheme.subtitle,
+              style: Theme.of(context).textTheme.subhead,
             ),
             Text(
-              "${feed.publisher.name}\n${getTime(feed.postedTime)}",
+              "${feed.publisher.name}\n${feed.postedTime.toLocal()}",
               style: Theme.of(context).textTheme.subtitle,
             )
           ],
@@ -53,21 +51,27 @@ class FeedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> body = [_renderImage(context), _renderText(context)];
+    List<Widget> body = [];
+    if (feed.id.isOdd) {
+      body = [_renderText(context), _renderImage(context)];
+    } else {
+      body = [_renderImage(context), _renderText(context)];
+    }
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return DetailPage(
-            feed: feed,
-          );
-        }));
-      },
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Column(
+    return Container(
+      height: feed.cover != null ? 280 : 120,
+      width: MediaQuery.of(context).size.width,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return DetailPage(
+                feed: feed,
+              );
+            }));
+          },
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: body,

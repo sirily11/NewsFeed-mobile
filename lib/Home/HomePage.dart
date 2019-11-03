@@ -7,7 +7,6 @@ import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
-import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
 
@@ -306,7 +305,7 @@ class NewsSearch extends SearchDelegate<String> {
             );
           },
           title: Text(feed.title),
-          subtitle: Text("${feed.publisher.name}\n${getTime(feed.postedTime)}"),
+          subtitle: Text(feed.publisher.name),
           trailing: feed.cover != null ? Image.network(feed.cover) : null,
         );
       },
