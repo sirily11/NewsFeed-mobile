@@ -6,9 +6,9 @@ import 'package:newsfeed_mobile/models/Feed.dart';
 
 class FeedProvider with ChangeNotifier {
   static const baseURL =
-      "https://toebpt5v9j.execute-api.us-east-1.amazonaws.com/dev/news-feed/news/";
+      "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/news/";
   static const publisherURL =
-      "https://toebpt5v9j.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
+      "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
   Dio client;
   MyDatabase database;
   bool isLoading = false;
@@ -41,6 +41,7 @@ class FeedProvider with ChangeNotifier {
     });
   }
 
+  /// Back to the top of the list
   void backToTop() {
     scrollController.animateTo(0,
         duration: Duration(
