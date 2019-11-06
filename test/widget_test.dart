@@ -187,9 +187,8 @@ void main() {
       await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
       await tester.pumpAndSettle();
-      var title1 = find.text("Title 1");
       expect(find.byIcon(Icons.refresh), findsNothing);
-      expect(title1, findsOneWidget);
+      expect(find.text("Title 1"), findsOneWidget);
     });
 
     testWidgets("When click on star, should show star list page",
@@ -224,6 +223,9 @@ void main() {
 
     testWidgets("When go to new category, the list should go to top",
         (WidgetTester tester) async {
+      final TestWidgetsFlutterBinding binding =
+          TestWidgetsFlutterBinding.ensureInitialized();
+      await binding.setSurfaceSize(Size(400, 500));
       FeedProvider feedProvider = FeedProvider(client: client);
       Widget widget = MultiProvider(
         providers: [

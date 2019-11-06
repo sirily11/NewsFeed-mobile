@@ -7,6 +7,7 @@ import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
+import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -26,11 +27,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     if (!widget.isError) {
-      this.fetchTabs(context);
+      this.fetchTabs();
     }
   }
 
-  fetchTabs(context) {
+  fetchTabs() {
     Future.delayed(Duration(milliseconds: 30)).then((_) async {
       FeedProvider provider = Provider.of(context);
       await provider.fetchFeeds();
@@ -56,6 +57,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       default:
         return NewsList(
+          key: Key("news_list"),
           provider: provider,
           refetch: this.fetchTabs,
         );
@@ -159,7 +161,7 @@ class NewsList extends StatelessWidget {
           thickness: 2,
         ),
       ),
-      key: Key("news_list"),
+      // key: Key("news_list"),
       controller: provider.scrollController,
       itemCount: provider.nextLink != null
           ? provider.feeds.length + 1
@@ -183,6 +185,7 @@ class NewsList extends StatelessWidget {
 
   Widget _renderBigScreen(int count) {
     return new StaggeredGridView.countBuilder(
+      // key: Key("news_list"),
       controller: provider.scrollController,
       crossAxisCount: count,
       itemCount: provider.nextLink != null
@@ -364,7 +367,6 @@ class NewsSearch extends SearchDelegate<String> {
     }
 
     return ListView.builder(
-      key: Key("search_list"),
       itemCount: feeds.length,
       itemBuilder: (context, index) {
         Feed feed = feeds[index];
@@ -379,7 +381,7 @@ class NewsSearch extends SearchDelegate<String> {
             );
           },
           title: Text(feed.title),
-          subtitle: Text(feed.publisher.name),
+          subtitle: Text("${feed.publisher.name}\n${getTime(feed.postedTime)}"),
           trailing: feed.cover != null ? Image.network(feed.cover) : null,
         );
       },
