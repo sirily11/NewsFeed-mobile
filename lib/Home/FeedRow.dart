@@ -58,20 +58,23 @@ class FeedRow extends StatelessWidget {
       body = [_renderImage(context), _renderText(context)];
     }
 
-    return Container(
-      height: feed.cover != null ? 280 : 120,
-      width: MediaQuery.of(context).size.width,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
               return DetailPage(
                 feed: feed,
               );
-            }));
-          },
-          child: Row(
+            },
+          ),
+        );
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: body,
