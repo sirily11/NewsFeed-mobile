@@ -57,11 +57,15 @@ class FeedRow extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return DetailPage(
-            feed: feed,
-          );
-        }));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
+              return DetailPage(
+                feed: feed,
+              );
+            },
+          ),
+        );
       },
       child: Container(
         width: MediaQuery.of(context).size.width,

@@ -30,24 +30,26 @@ class FeedProvider with ChangeNotifier {
       if (scrollController.position.pixels ==
               scrollController.position.maxScrollExtent &&
           nextLink != null) {
-        await fetchMore();
         key.currentState.showSnackBar(
           SnackBar(
             content: Text("Loading More"),
             duration: Duration(milliseconds: 400),
           ),
         );
+        await fetchMore();
       }
     });
   }
 
   /// Back to the top of the list
   void backToTop() {
-    scrollController.animateTo(0,
-        duration: Duration(
-          milliseconds: 300,
-        ),
-        curve: Curves.easeInOut);
+    if (scrollController.hasClients) {
+      scrollController.animateTo(0,
+          duration: Duration(
+            milliseconds: 300,
+          ),
+          curve: Curves.easeInOut);
+    }
   }
 
   /// Fetch publishers from server

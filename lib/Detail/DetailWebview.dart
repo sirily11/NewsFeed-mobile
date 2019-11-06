@@ -28,6 +28,7 @@ class DetailWebview extends StatelessWidget {
         ],
       ),
       body: WebView(
+        javascriptMode: JavascriptMode.unrestricted,
         initialUrl: feed.link,
       ),
     );

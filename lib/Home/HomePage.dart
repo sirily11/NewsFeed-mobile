@@ -10,6 +10,7 @@ import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 class HomePage extends StatefulWidget {
   /// This is the variable for testing. Set this to true if
@@ -26,11 +27,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     if (!widget.isError) {
-      this.fetchTabs();
+      this.fetchTabs(context);
     }
   }
 
-  fetchTabs() {
+  fetchTabs(context) {
     Future.delayed(Duration(milliseconds: 30)).then((_) async {
       FeedProvider provider = Provider.of(context);
       await provider.fetchFeeds();
@@ -142,6 +143,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
+/// Build news list
 class NewsList extends StatelessWidget {
   final Function refetch;
 
@@ -150,11 +152,99 @@ class NewsList extends StatelessWidget {
 
   final FeedProvider provider;
 
+  Widget _renderSmallScreen() {
+    return ListView.separated(
+      separatorBuilder: (c, i) => Padding(
+        padding: const EdgeInsets.only(left: 40, right: 40),
+        child: Divider(
+          thickness: 2,
+        ),
+      ),
+      key: Key("news_list"),
+      controller: provider.scrollController,
+      itemCount: provider.nextLink != null
+          ? provider.feeds.length + 1
+          : provider.feeds.length,
+      itemBuilder: (context, index) {
+        if (index == provider.feeds.length) {
+          return Center(
+            child: Text(
+              "More on bottom...",
+              key: Key("more_text"),
+            ),
+          );
+        }
+        Feed feed = provider.feeds[index];
+        return FeedRow(
+          feed: feed,
+        );
+      },
+    );
+  }
+
+  Widget _renderBigScreen(int count) {
+    return new StaggeredGridView.countBuilder(
+      controller: provider.scrollController,
+      crossAxisCount: count,
+      itemCount: provider.nextLink != null
+          ? provider.feeds.length + 1
+          : provider.feeds.length,
+      itemBuilder: (BuildContext context, int index) {
+        if (index == provider.feeds.length) {
+          return Center(
+            child: Text(
+              "More on bottom...",
+              key: Key("more_text"),
+            ),
+          );
+        }
+
+        Feed feed = provider.feeds[index];
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return DetailPage(
+                    feed: feed,
+                  );
+                },
+              ),
+            );
+          },
+          child: Card(
+            child: FeedRow(
+              feed: feed,
+            ),
+          ),
+        );
+      },
+      staggeredTileBuilder: (int index) {
+        if (index == provider.feeds.length) {
+          return StaggeredTile.count(2, 1);
+        }
+        Feed feed = provider.feeds[index];
+        double randomValue = index.isEven ? 0.3 : 0.9;
+        double baseValue = count > 4 ? 3 : 2.5;
+
+        return StaggeredTile.count(
+            feed.cover != null ? 2 : 2,
+            feed.cover != null
+                ? baseValue + randomValue
+                : baseValue - 2.2 + randomValue);
+      },
+      mainAxisSpacing: 4.0,
+      crossAxisSpacing: 4.0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+
     if (provider.isError) {
       return Container(
-        width: MediaQuery.of(context).size.width,
+        width: width,
         child: Center(
           child: Row(
             children: <Widget>[
@@ -175,31 +265,15 @@ class NewsList extends StatelessWidget {
       onRefresh: () async {
         await provider.fetchFeeds();
       },
-      child: ListView.separated(
-        separatorBuilder: (c, i) => Padding(
-          padding: const EdgeInsets.only(left: 40, right: 40),
-          child: Divider(
-            thickness: 2,
-          ),
-        ),
-        key: Key("news_list"),
-        controller: provider.scrollController,
-        itemCount: provider.nextLink != null
-            ? provider.feeds.length + 1
-            : provider.feeds.length,
-        itemBuilder: (context, index) {
-          if (index == provider.feeds.length) {
-            return Center(
-              child: Text(
-                "More on bottom...",
-                key: Key("more_text"),
-              ),
-            );
+      child: LayoutBuilder(
+        builder: (context, constrains) {
+          if (constrains.maxWidth < 600) {
+            return _renderSmallScreen();
+          } else if (constrains.maxWidth < 900) {
+            return _renderBigScreen(4);
+          } else {
+            return _renderBigScreen(8);
           }
-          Feed feed = provider.feeds[index];
-          return FeedRow(
-            feed: feed,
-          );
         },
       ),
     );
