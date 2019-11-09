@@ -59,4 +59,35 @@ void main() {
       expect(results, "3 years ago");
     });
   });
+
+  group("Test split highlight text", () {
+    test("Simple split", () {
+      var results = getHighlightText("simple <em>test</em>");
+      expect(results.length, 2);
+      expect(results[0].text, "simple ");
+      expect(results[0].isBold, false);
+      expect(results[1].text, "test");
+      expect(results[1].isBold, true);
+    });
+
+    test("Simple split 2", () {
+      var results = getHighlightText("<em>simple</em> test");
+      expect(results.length, 2);
+      expect(results[0].text, "simple");
+      expect(results[0].isBold, true);
+      expect(results[1].text, " test");
+      expect(results[1].isBold, false);
+    });
+
+    test("Simple split 3", () {
+      var results = getHighlightText("<em>simple</em> test <em>3</em>");
+      expect(results.length, 3);
+      expect(results[0].text, "simple");
+      expect(results[0].isBold, true);
+      expect(results[1].text, " test ");
+      expect(results[1].isBold, false);
+      expect(results[2].text, "3");
+      expect(results[2].isBold, true);
+    });
+  });
 }

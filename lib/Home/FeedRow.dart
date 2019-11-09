@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class FeedRow extends StatelessWidget {
@@ -25,6 +26,8 @@ class FeedRow extends StatelessWidget {
   }
 
   Widget _renderText(context) {
+    FeedProvider provider = Provider.of(context);
+
     return Container(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -41,10 +44,28 @@ class FeedRow extends StatelessWidget {
                   ? Theme.of(context).textTheme.title
                   : Theme.of(context).textTheme.subtitle,
             ),
-            Text(
-              "${feed.publisher.name}\n${getTime(feed.postedTime)}",
-              style: Theme.of(context).textTheme.subtitle,
-            )
+            Column(
+              crossAxisAlignment: feed.cover != null
+                  ? CrossAxisAlignment.center
+                  : CrossAxisAlignment.start,
+              children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Container(
+                    color: provider.colors[feed.publisher_id],
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    child: Text(
+                      "${feed.publisher.name}",
+                      style: Theme.of(context).textTheme.subtitle,
+                    ),
+                  ),
+                ),
+                Text(
+                  "${getTime(feed.postedTime)}",
+                  style: Theme.of(context).textTheme.subtitle,
+                )
+              ],
+            ),
           ],
         )),
       ),

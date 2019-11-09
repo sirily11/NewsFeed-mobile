@@ -1,14 +1,20 @@
+import 'dart:convert';
+
+import 'package:algolia/algolia.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:random_color/random_color.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class FeedProvider with ChangeNotifier {
   static const baseURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/news/";
   static const publisherURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
+  Algolia algolia;
   Dio client;
   MyDatabase database;
   bool isLoading = false;
@@ -19,11 +25,24 @@ class FeedProvider with ChangeNotifier {
   bool isError = false;
   final ScrollController scrollController = ScrollController();
   final GlobalKey<ScaffoldState> key = GlobalKey();
+  final colors = List<Color>.generate(30, (_) {
+    RandomColor _randomColor = RandomColor();
+    return _randomColor.randomColor(colorBrightness: ColorBrightness.dark);
+  });
 
-  FeedProvider({Dio client, MyDatabase database}) {
+  FeedProvider({Dio client, MyDatabase database, Algolia algolia}) {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
-    // this.database = database ?? MyDatabase();
+    // alglolia
+    if (algolia == null) {
+      rootBundle.loadString("assets/key.json").then((data) {
+        var jsondata = json.decode(data);
+        this.algolia = Algolia.init(
+            applicationId: jsondata['appId'], apiKey: jsondata['apiKey']);
+      });
+    } else {
+      this.algolia = algolia;
+    }
 
     // fetch more listener
     scrollController.addListener(() async {
@@ -148,5 +167,24 @@ class FeedProvider with ChangeNotifier {
     await this.fetchFeeds();
   }
 
+  /// Quick search. Using Algolia
+  Future<AlgoliaQuerySnapshot> quickSearch(String keyword) async {
+    AlgoliaQuery query = algolia.instance.index("news_feed").search(keyword);
+    AlgoliaQuerySnapshot snap = await query.getObjects();
+    return snap;
+  }
+
   int get currentSelectionIndex => this._currentSelection;
+
+  Future<Feed> fetchFeed(int id) async {
+    try {
+      Response<Map<String, dynamic>> response =
+          await client.get("$baseURL$id/");
+      Feed feed = Feed.fromJson(response.data);
+      return feed;
+    } catch (err) {
+      print(err);
+      return null;
+    }
+  }
 }

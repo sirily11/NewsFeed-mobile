@@ -1,3 +1,5 @@
+import 'package:newsfeed_mobile/models/AlgoliaQueryData.dart';
+
 /// Get time difference
 /// When days is greater than 365, then return in years
 /// when time difference is greater than 23 hours, then return in days
@@ -33,4 +35,26 @@ String getTime(DateTime dateTime, {DateTime after}) {
     return "${timeDiff.inHours} hour ago";
   }
   return "${timeDiff.inHours} hours ago";
+}
+
+List<HighlightText> getHighlightText(String text) {
+  var regex = RegExp(r"\<em>(.*?)<\/em>");
+  Iterable<Match> matches = regex.allMatches(text);
+  List<String> textWithoutMatches = text.split(regex);
+  List<String> textWithMatches = matches.map((m) {
+    return m.group(0);
+  }).toList();
+  List<HighlightText> textList = [];
+  textWithoutMatches.asMap().forEach((i, t) {
+    if (t != "") {
+      textList.add(HighlightText(text: t));
+    }
+    if (i < textWithMatches.length) {
+      String matchStr = textWithMatches[i];
+      matchStr = matchStr.replaceAll("<em>", "");
+      matchStr = matchStr.replaceAll("</em>", "");
+      textList.add(HighlightText(text: matchStr, isBold: true));
+    }
+  });
+  return textList;
 }

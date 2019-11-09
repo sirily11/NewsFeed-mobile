@@ -151,10 +151,18 @@ class _DetailPageState extends State<DetailPage> {
           padding: const EdgeInsets.only(bottom: 200),
           child: Markdown(
             key: Key("news_body"),
-            styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(
+            styleSheet: MarkdownStyleSheet.fromTheme(
+              theme.copyWith(
                 textTheme: theme.textTheme.copyWith(
-                    body1: theme.textTheme.body1
-                        .copyWith(fontSize: baseFrontSize)))),
+                  title: theme.textTheme.body1
+                      .copyWith(fontSize: baseFrontSize + 10),
+                  headline: theme.textTheme.headline
+                      .copyWith(fontSize: baseFrontSize + 10),
+                  body1:
+                      theme.textTheme.body1.copyWith(fontSize: baseFrontSize),
+                ),
+              ),
+            ),
             data: widget.feed.content ?? "Parsing Error",
           ),
         ),

@@ -1,3 +1,4 @@
+import 'package:algolia/algolia.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -8,10 +9,13 @@ class MockClient extends Mock implements Dio {}
 
 class MockDatabase extends Mock implements MyDatabase {}
 
+class MockAlgolia extends Mock implements Algolia {}
+
 void main() {
   group("Test Feed Provider", () {
     Dio client = MockClient();
     MyDatabase database = MockDatabase();
+    Algolia algolia = MockAlgolia();
     FeedProvider provider;
 
     setUpAll(() async {
@@ -71,7 +75,8 @@ void main() {
           },
         ),
       );
-      provider = FeedProvider(client: client, database: database);
+      provider =
+          FeedProvider(client: client, database: database, algolia: algolia);
     });
 
     test("Test fetch", () async {
