@@ -40,6 +40,8 @@ class FeedRow extends StatelessWidget {
           children: <Widget>[
             Text(
               feed.title,
+              textAlign:
+                  feed.cover != null ? TextAlign.center : TextAlign.start,
               style: feed.cover != null
                   ? Theme.of(context).textTheme.title
                   : Theme.of(context).textTheme.subtitle,
@@ -49,21 +51,16 @@ class FeedRow extends StatelessWidget {
                   ? CrossAxisAlignment.center
                   : CrossAxisAlignment.start,
               children: <Widget>[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Container(
-                    color: provider.colors[feed.publisher_id],
-                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    child: Text(
-                      "${feed.publisher.name}",
-                      style: Theme.of(context).textTheme.subtitle,
-                    ),
-                  ),
-                ),
+                Text(feed.publisher.name),
                 Text(
                   "${getTime(feed.postedTime)}",
                   style: Theme.of(context).textTheme.subtitle,
-                )
+                ),
+                feed.keywords.length > 0
+                    ? TagsWidget(
+                        tags: feed.keywords,
+                      )
+                    : Container()
               ],
             ),
           ],
@@ -97,6 +94,54 @@ class FeedRow extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: body,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class TagsWidget extends StatelessWidget {
+  TagsWidget({this.tags});
+
+  final List<String> tags;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 25,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: tags
+            .map(
+              (t) => Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: TagWidget(
+                  text: t,
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class TagWidget extends StatelessWidget {
+  const TagWidget({Key key, @required this.text, this.color}) : super(key: key);
+
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        color: color ?? Colors.blue,
+        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        child: Text(
+          "$text",
+          style: Theme.of(context).textTheme.subtitle,
         ),
       ),
     );

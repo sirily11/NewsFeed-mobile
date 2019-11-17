@@ -8,19 +8,23 @@ class Feed {
   DateTime postedTime;
   Publisher publisher;
   int publisher_id;
+
   /// if the feed has been save to local
   bool isStar = false;
+  List<String> keywords;
 
-  Feed(
-      {this.id,
-      this.title,
-      this.link,
-      this.cover,
-      this.content,
-      this.sentiment,
-      this.postedTime,
-      this.publisher,
-      this.publisher_id});
+  Feed({
+    this.id,
+    this.title,
+    this.link,
+    this.cover,
+    this.content,
+    this.sentiment,
+    this.postedTime,
+    this.publisher,
+    this.publisher_id,
+    this.keywords,
+  });
 
   Feed.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -32,6 +36,7 @@ class Feed {
     postedTime = DateTime.parse(json['posted_time']);
     publisher_id = json['publisher'];
     publisher = Publisher.fromJson(json['news_publisher']);
+    keywords = List<String>.from(json["keywords"].map((x) => x));
   }
 
   Map<String, dynamic> toJson() {
@@ -44,6 +49,7 @@ class Feed {
     data['sentiment'] = this.sentiment;
     data['posted_time'] = this.postedTime;
     data['publisher'] = this.publisher;
+    data['keywords'] = this.keywords;
     return data;
   }
 }
