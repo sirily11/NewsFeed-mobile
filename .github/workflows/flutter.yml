@@ -11,6 +11,8 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: "12.x"
+      - name: add key
+        run: ${{ secrets.key }} > assets/key.json
       - uses: subosito/flutter-action@v1
         with:
           channel: "stable"
@@ -18,7 +20,6 @@ jobs:
       - run: flutter upgrade
       - run: flutter config --enable-web
       - run: flutter pub get
-      - run: ${{ secrets.key }} > assets/key.json
       - run: flutter test
       - run: flutter build web
       - name: Deploy flutter web
