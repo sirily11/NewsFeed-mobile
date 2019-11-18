@@ -12,6 +12,8 @@ import 'package:flutter/services.dart' show rootBundle;
 class FeedProvider with ChangeNotifier {
   static const baseURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/news/";
+  static const redirectURL =
+      "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/redirect";
   static const publisherURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
   Algolia algolia;
@@ -172,6 +174,21 @@ class FeedProvider with ChangeNotifier {
     AlgoliaQuery query = algolia.instance.index("news_feed").search(keyword);
     AlgoliaQuerySnapshot snap = await query.getObjects();
     return snap;
+  }
+
+  Future<Feed> redirect(String link) async {
+    try {
+      var url = "$redirectURL?link=$link";
+      Response response = await client.get(url);
+      if (response.statusCode == 200) {
+        return Feed.fromJson(response.data);
+      } else {
+        return null;
+      }
+    } catch (err) {
+      print(err);
+      return null;
+    }
   }
 
   int get currentSelectionIndex => this._currentSelection;

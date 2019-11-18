@@ -3,7 +3,10 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class DetailPage extends StatefulWidget {
@@ -93,6 +96,7 @@ class _DetailPageState extends State<DetailPage> {
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
+    FeedProvider provider = Provider.of<FeedProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -153,6 +157,24 @@ class _DetailPageState extends State<DetailPage> {
           child: widget.feed.content != null
               ? Markdown(
                   key: Key("news_body"),
+                  onTapLink: (link) async {
+                    Feed feed = await provider.redirect(link);
+                    print(link);
+                    if (feed != null) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (ctx) {
+                          return DetailPage(
+                            feed: feed,
+                            myDatabase: myDatabase,
+                          );
+                        }),
+                      );
+                    } else {
+                      if (await canLaunch(link)) {
+                        await launch(link);
+                      }
+                    }
+                  },
                   styleSheet: MarkdownStyleSheet.fromTheme(
                     theme.copyWith(
                       textTheme: theme.textTheme.copyWith(
