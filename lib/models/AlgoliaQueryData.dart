@@ -12,7 +12,8 @@ class HighlightResult {
   factory HighlightResult.fromJson(Map<String, dynamic> json) =>
       HighlightResult(
         title: Content.fromJson(json["title"]),
-        content: Content.fromJson(json["content"]),
+        content:
+            json['content'] != null ? Content.fromJson(json["content"]) : null,
       );
 
   Map<String, dynamic> toJson() => {

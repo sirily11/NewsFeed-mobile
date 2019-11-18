@@ -4,6 +4,7 @@ import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class DetailPage extends StatefulWidget {
   final Feed feed;
@@ -149,22 +150,27 @@ class _DetailPageState extends State<DetailPage> {
             topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
         body: Padding(
           padding: const EdgeInsets.only(bottom: 200),
-          child: Markdown(
-            key: Key("news_body"),
-            styleSheet: MarkdownStyleSheet.fromTheme(
-              theme.copyWith(
-                textTheme: theme.textTheme.copyWith(
-                  title: theme.textTheme.body1
-                      .copyWith(fontSize: baseFrontSize + 10),
-                  headline: theme.textTheme.headline
-                      .copyWith(fontSize: baseFrontSize + 10),
-                  body1:
-                      theme.textTheme.body1.copyWith(fontSize: baseFrontSize),
+          child: widget.feed.content != null
+              ? Markdown(
+                  key: Key("news_body"),
+                  styleSheet: MarkdownStyleSheet.fromTheme(
+                    theme.copyWith(
+                      textTheme: theme.textTheme.copyWith(
+                        title: theme.textTheme.body1
+                            .copyWith(fontSize: baseFrontSize + 10),
+                        headline: theme.textTheme.headline
+                            .copyWith(fontSize: baseFrontSize + 10),
+                        body1: theme.textTheme.body1
+                            .copyWith(fontSize: baseFrontSize),
+                      ),
+                    ),
+                  ),
+                  data: widget.feed.content,
+                )
+              : WebView(
+                  initialUrl: widget.feed.link,
+                  javascriptMode: JavascriptMode.unrestricted,
                 ),
-              ),
-            ),
-            data: widget.feed.content ?? "Parsing Error",
-          ),
         ),
         panel: _panel(),
       ),
