@@ -1,3 +1,4 @@
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Database/FeedData.dart';
@@ -85,6 +86,16 @@ class _DetailPageState extends State<DetailPage> {
                         baseFrontSize = newValue;
                       });
                     },
+                  ),
+                  FlatButton(
+                    onPressed: () async {
+                      final DynamicLinkParameters parameters =
+                          DynamicLinkParameters(
+                              uriPrefix:
+                                  "https://mobile.sirileepage.com/news/mobile",
+                              link: Uri.parse(""));
+                    },
+                    child: Text("Share to others"),
                   )
                 ],
               )

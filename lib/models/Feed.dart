@@ -29,14 +29,18 @@ class Feed {
   Feed.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
-    link = json['link'];
+    link = json['link'] ?? "";
     cover = json['cover'];
     content = json['content'];
     sentiment = json['sentiment'];
     postedTime = DateTime.parse(json['posted_time']);
     publisher_id = json['publisher'];
     publisher = Publisher.fromJson(json['news_publisher']);
-    keywords = List<String>.from(json["keywords"].map((x) => x));
+    if (json["keywords"] != null) {
+      keywords = List<String>.from(json["keywords"].map((x) => x));
+    } else {
+      keywords = [];
+    }
   }
 
   Map<String, dynamic> toJson() {

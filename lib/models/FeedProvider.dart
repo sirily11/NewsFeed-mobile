@@ -8,13 +8,13 @@ import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:random_color/random_color.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedProvider with ChangeNotifier {
-  static const baseURL =
-      "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/news/";
-  static const redirectURL =
+  static String baseURL;
+  static String redirectURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/redirect";
-  static const publisherURL =
+  static String publisherURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
   Algolia algolia;
   Dio client;
@@ -32,7 +32,8 @@ class FeedProvider with ChangeNotifier {
     return _randomColor.randomColor(colorBrightness: ColorBrightness.dark);
   });
 
-  FeedProvider({Dio client, MyDatabase database, Algolia algolia}) {
+  FeedProvider(
+      {Dio client, MyDatabase database, Algolia algolia, String base}) {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
     // alglolia
@@ -44,6 +45,10 @@ class FeedProvider with ChangeNotifier {
       });
     } else {
       this.algolia = algolia;
+    }
+
+    if (base != null) {
+      setupURL(base);
     }
 
     // fetch more listener
@@ -62,6 +67,15 @@ class FeedProvider with ChangeNotifier {
     });
   }
 
+  /// Set up the url and store the data into shared preferences
+  void setupURL(String base) async {
+    baseURL = "$base/news/";
+    redirectURL = "$base/redirect";
+    publisherURL = "$base/publisher/";
+    var prefs = await SharedPreferences.getInstance();
+    prefs.setString("baseURL", base);
+  }
+
   /// Back to the top of the list
   void backToTop() {
     if (scrollController.hasClients) {
@@ -77,7 +91,7 @@ class FeedProvider with ChangeNotifier {
   Future<List<Publisher>> fetchPublishers() async {
     try {
       Response<List> response = await client.get(publisherURL);
-      publishers = List.from(publishers)
+      publishers = List.from([publishers[0]])
         ..addAll(response.data.map((p) => Publisher.fromJson(p)).toList());
       notifyListeners();
       return publishers;
@@ -85,7 +99,7 @@ class FeedProvider with ChangeNotifier {
       print(err);
       isError = true;
       notifyListeners();
-      return null;
+      rethrow;
     }
   }
 

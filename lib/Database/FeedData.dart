@@ -27,13 +27,44 @@ class Publiser extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@UseMoor(tables: [FavoriteFeed])
+class FeedSource extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text().customConstraint("UNIQUE")();
+  TextColumn get link => text()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@UseMoor(tables: [FavoriteFeed, FeedSource])
 class MyDatabase extends _$MyDatabase {
   MyDatabase()
       : super(FlutterQueryExecutor.inDatabaseFolder(path: "db.sqlite"));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(onCreate: (Migrator m) {
+        return m.createAllTables();
+      }, onUpgrade: (Migrator m, int from, int to) async {
+        if (from == 1) {
+          await m.createAllTables();
+        }
+      });
+
+  /// get all news sources
+  Future<List<FeedSourceData>> get allFeedSources => select(feedSource).get();
+
+  /// add feed source
+  Future addFeedSource(FeedSourceData feedSourceData) {
+    return into(feedSource).insert(feedSourceData);
+  }
+
+  /// delete feed source
+  Future deleteFeedSource(FeedSourceData feedSourceData) {
+    return delete(feedSource).delete(feedSourceData);
+  }
 
   /// get all feeds
   Future<List<FavoriteFeedData>> get allFavoriteFeed =>

@@ -428,11 +428,205 @@ class $FavoriteFeedTable extends FavoriteFeed
   }
 }
 
+class FeedSourceData extends DataClass implements Insertable<FeedSourceData> {
+  final int id;
+  final String name;
+  final String link;
+  FeedSourceData({@required this.id, @required this.name, @required this.link});
+  factory FeedSourceData.fromData(
+      Map<String, dynamic> data, GeneratedDatabase db,
+      {String prefix}) {
+    final effectivePrefix = prefix ?? '';
+    final intType = db.typeSystem.forDartType<int>();
+    final stringType = db.typeSystem.forDartType<String>();
+    return FeedSourceData(
+      id: intType.mapFromDatabaseResponse(data['${effectivePrefix}id']),
+      name: stringType.mapFromDatabaseResponse(data['${effectivePrefix}name']),
+      link: stringType.mapFromDatabaseResponse(data['${effectivePrefix}link']),
+    );
+  }
+  factory FeedSourceData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return FeedSourceData(
+      id: serializer.fromJson<int>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      link: serializer.fromJson<String>(json['link']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson(
+      {ValueSerializer serializer = const ValueSerializer.defaults()}) {
+    return {
+      'id': serializer.toJson<int>(id),
+      'name': serializer.toJson<String>(name),
+      'link': serializer.toJson<String>(link),
+    };
+  }
+
+  @override
+  FeedSourceCompanion createCompanion(bool nullToAbsent) {
+    return FeedSourceCompanion(
+      id: id == null && nullToAbsent ? const Value.absent() : Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      link: link == null && nullToAbsent ? const Value.absent() : Value(link),
+    );
+  }
+
+  FeedSourceData copyWith({int id, String name, String link}) => FeedSourceData(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        link: link ?? this.link,
+      );
+  @override
+  String toString() {
+    return (StringBuffer('FeedSourceData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('link: $link')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      $mrjf($mrjc(id.hashCode, $mrjc(name.hashCode, link.hashCode)));
+  @override
+  bool operator ==(other) =>
+      identical(this, other) ||
+      (other is FeedSourceData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.link == this.link);
+}
+
+class FeedSourceCompanion extends UpdateCompanion<FeedSourceData> {
+  final Value<int> id;
+  final Value<String> name;
+  final Value<String> link;
+  const FeedSourceCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.link = const Value.absent(),
+  });
+  FeedSourceCompanion.insert({
+    this.id = const Value.absent(),
+    @required String name,
+    @required String link,
+  })  : name = Value(name),
+        link = Value(link);
+  FeedSourceCompanion copyWith(
+      {Value<int> id, Value<String> name, Value<String> link}) {
+    return FeedSourceCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      link: link ?? this.link,
+    );
+  }
+}
+
+class $FeedSourceTable extends FeedSource
+    with TableInfo<$FeedSourceTable, FeedSourceData> {
+  final GeneratedDatabase _db;
+  final String _alias;
+  $FeedSourceTable(this._db, [this._alias]);
+  final VerificationMeta _idMeta = const VerificationMeta('id');
+  GeneratedIntColumn _id;
+  @override
+  GeneratedIntColumn get id => _id ??= _constructId();
+  GeneratedIntColumn _constructId() {
+    return GeneratedIntColumn('id', $tableName, false,
+        hasAutoIncrement: true, declaredAsPrimaryKey: true);
+  }
+
+  final VerificationMeta _nameMeta = const VerificationMeta('name');
+  GeneratedTextColumn _name;
+  @override
+  GeneratedTextColumn get name => _name ??= _constructName();
+  GeneratedTextColumn _constructName() {
+    return GeneratedTextColumn('name', $tableName, false,
+        $customConstraints: 'UNIQUE');
+  }
+
+  final VerificationMeta _linkMeta = const VerificationMeta('link');
+  GeneratedTextColumn _link;
+  @override
+  GeneratedTextColumn get link => _link ??= _constructLink();
+  GeneratedTextColumn _constructLink() {
+    return GeneratedTextColumn(
+      'link',
+      $tableName,
+      false,
+    );
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [id, name, link];
+  @override
+  $FeedSourceTable get asDslTable => this;
+  @override
+  String get $tableName => _alias ?? 'feed_source';
+  @override
+  final String actualTableName = 'feed_source';
+  @override
+  VerificationContext validateIntegrity(FeedSourceCompanion d,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    if (d.id.present) {
+      context.handle(_idMeta, id.isAcceptableValue(d.id.value, _idMeta));
+    } else if (id.isRequired && isInserting) {
+      context.missing(_idMeta);
+    }
+    if (d.name.present) {
+      context.handle(
+          _nameMeta, name.isAcceptableValue(d.name.value, _nameMeta));
+    } else if (name.isRequired && isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (d.link.present) {
+      context.handle(
+          _linkMeta, link.isAcceptableValue(d.link.value, _linkMeta));
+    } else if (link.isRequired && isInserting) {
+      context.missing(_linkMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FeedSourceData map(Map<String, dynamic> data, {String tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : null;
+    return FeedSourceData.fromData(data, _db, prefix: effectivePrefix);
+  }
+
+  @override
+  Map<String, Variable> entityToSql(FeedSourceCompanion d) {
+    final map = <String, Variable>{};
+    if (d.id.present) {
+      map['id'] = Variable<int, IntType>(d.id.value);
+    }
+    if (d.name.present) {
+      map['name'] = Variable<String, StringType>(d.name.value);
+    }
+    if (d.link.present) {
+      map['link'] = Variable<String, StringType>(d.link.value);
+    }
+    return map;
+  }
+
+  @override
+  $FeedSourceTable createAlias(String alias) {
+    return $FeedSourceTable(_db, alias);
+  }
+}
+
 abstract class _$MyDatabase extends GeneratedDatabase {
   _$MyDatabase(QueryExecutor e) : super(SqlTypeSystem.defaultInstance, e);
   $FavoriteFeedTable _favoriteFeed;
   $FavoriteFeedTable get favoriteFeed =>
       _favoriteFeed ??= $FavoriteFeedTable(this);
+  $FeedSourceTable _feedSource;
+  $FeedSourceTable get feedSource => _feedSource ??= $FeedSourceTable(this);
   @override
-  List<TableInfo> get allTables => [favoriteFeed];
+  List<TableInfo> get allTables => [favoriteFeed, feedSource];
 }

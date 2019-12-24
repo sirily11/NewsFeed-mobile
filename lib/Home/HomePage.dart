@@ -6,8 +6,10 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
+import 'package:newsfeed_mobile/Home/HelpCardList.dart';
 import 'package:newsfeed_mobile/Home/HighlightTextWidget.dart';
 import 'package:newsfeed_mobile/Home/NewsList.dart';
+import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/models/AlgoliaQueryData.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
@@ -16,6 +18,7 @@ import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   /// This is the variable for testing. Set this to true if
@@ -33,35 +36,53 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     if (!widget.isError) {
-      this.fetchTabs();
+      SharedPreferences.getInstance().then((prefs) async {
+        String baseURL = prefs.getString("baseURL");
+        if (baseURL != null) {
+          FeedProvider provider = Provider.of(context);
+          provider.setupURL(baseURL);
+          await this.fetchTabs();
+        }
+      });
     }
   }
 
-  fetchTabs() {
-    Future.delayed(Duration(milliseconds: 30)).then((_) async {
-      FeedProvider provider = Provider.of(context);
-      await provider.fetchFeeds();
-      List<Publisher> publishers = await provider.fetchPublishers();
+  Future<void> fetchTabs() async {
+    FeedProvider provider = Provider.of(context);
+    await provider.fetchFeeds();
+    List<Publisher> publishers = await provider.fetchPublishers();
+    if (publishers != null) {
       setState(() {
         tabController = TabController(vsync: this, length: publishers.length);
       });
+    }
 
-      tabController.addListener(() async {
-        if (tabController.indexIsChanging) {
-          await provider.setCurrentSelectionIndex(tabController.index);
-        }
-      });
+    tabController?.addListener(() async {
+      if (tabController.indexIsChanging) {
+        await provider.setCurrentSelectionIndex(tabController.index);
+      }
     });
   }
 
   /// Render app's main screen base on the current buttom nav
   Widget _renderPage({context, provider}) {
     HomeControlProvider homeControlProvider = Provider.of(context);
+    FeedProvider provider = Provider.of(context);
+
     switch (homeControlProvider.currentIndex) {
       case 1:
         return StarFeedList();
 
+      case 2:
+        return NewsSourceList(
+          refresh: this.fetchTabs,
+        );
+
       default:
+        if (FeedProvider.baseURL == null) {
+          return HelpCardList();
+        }
+
         return NewsList(
           key: Key("news_list"),
           provider: provider,
@@ -143,6 +164,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               key: Key("favorite"),
             ),
             icon: Icon(Icons.star),
+          ),
+          BottomNavigationBarItem(
+            title: Text(
+              "Settings",
+              key: Key("settings"),
+            ),
+            icon: Icon(Icons.settings),
           ),
         ],
       ),
