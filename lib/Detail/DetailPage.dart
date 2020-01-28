@@ -186,17 +186,19 @@ class _DetailPageState extends State<DetailPage> {
                       }
                     }
                   },
-                  styleSheet: MarkdownStyleSheet.fromTheme(
-                    theme.copyWith(
-                      textTheme: theme.textTheme.copyWith(
-                        title: theme.textTheme.body1
-                            .copyWith(fontSize: baseFrontSize + 10),
-                        headline: theme.textTheme.headline
-                            .copyWith(fontSize: baseFrontSize + 10),
-                        body1: theme.textTheme.body1
-                            .copyWith(fontSize: baseFrontSize),
-                      ),
+                  selectable: true,
+                  styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(
+                    textTheme: theme.textTheme.copyWith(
+                      bodyText1: theme.textTheme.bodyText1
+                          .copyWith(fontSize: baseFrontSize + 10),
+                      // display1: theme.textTheme.headline
+                      //     .copyWith(fontSize: baseFrontSize + 10),
+                      bodyText2: theme.textTheme.bodyText2
+                          .copyWith(fontSize: baseFrontSize),
                     ),
+                  )).copyWith(
+                    tableCellsDecoration:
+                        BoxDecoration(color: Colors.transparent),
                   ),
                   data: widget.feed.content,
                 )

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
@@ -125,20 +126,27 @@ class NewsList extends StatelessWidget {
       );
     }
 
-    return RefreshIndicator(
+    return LiquidPullToRefresh(
+      showChildOpacityTransition: false,
+      springAnimationDurationInMilliseconds: 100,
       onRefresh: () async {
         await provider.fetchFeeds();
       },
-      child: LayoutBuilder(
-        builder: (context, constrains) {
-          if (constrains.maxWidth < 600) {
-            return _renderSmallScreen();
-          } else if (constrains.maxWidth < 900) {
-            return _renderBigScreen(4);
-          } else {
-            return _renderBigScreen(8);
-          }
-        },
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          LayoutBuilder(
+            builder: (context, constrains) {
+              if (constrains.maxWidth < 600) {
+                return _renderSmallScreen();
+              } else if (constrains.maxWidth < 900) {
+                return _renderBigScreen(4);
+              } else {
+                return _renderBigScreen(8);
+              }
+            },
+          )
+        ],
       ),
     );
   }

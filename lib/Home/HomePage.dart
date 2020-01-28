@@ -245,70 +245,74 @@ class NewsSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if (query.isEmpty) {
-      return Stack(
-        children: <Widget>[
-          Positioned(
-            bottom: 10,
-            right: 0,
-            child: Image.asset(
-              "assets/search-by-algolia-dark-background.png",
-              width: 400,
-              height: 140,
-            ),
-          ),
-        ],
-      );
-    }
-    FeedProvider feedProvider = Provider.of(context);
-
-    return Stack(
-      children: <Widget>[
-        FutureBuilder<AlgoliaQuerySnapshot>(
-          future: feedProvider.quickSearch(query),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return Container();
-            }
-            List<Feed> feeds = snapshot.data.hits
-                .where((hit) => hit.highlightResult != null)
-                .map((hit) {
-              try {
-                HighlightResult result =
-                    HighlightResult.fromJson(hit.highlightResult);
-                return Feed(
-                    title: result.title?.value,
-                    id: int.parse(hit.objectID),
-                    postedTime: DateTime.fromMillisecondsSinceEpoch(
-                        hit.data['posted_time'] * 1000),
-                    cover: hit.data['cover'],
-                    publisher: Publisher(name: hit.data['publisher']));
-              } catch (err) {
-                print(err);
-              }
-            }).toList();
-
-            return _buildSuggestResults(feeds, context);
-          },
-        ),
-        LayoutBuilder(
-          builder: (context, cons) {
-            if (cons.minHeight < 300) {
-              return Container();
-            }
-            return Positioned(
-              bottom: 0,
-              right: 0,
-              child: Image.asset(
-                "assets/search-by-algolia-dark-background.png",
-                width: 400,
-                height: 140,
-              ),
-            );
-          },
-        )
-      ],
+    return Center(
+      child: Text("Press Search"),
     );
+
+    // if (query.isEmpty) {
+    //   return Stack(
+    //     children: <Widget>[
+    //       Positioned(
+    //         bottom: 10,
+    //         right: 0,
+    //         child: Image.asset(
+    //           "assets/search-by-algolia-dark-background.png",
+    //           width: 400,
+    //           height: 140,
+    //         ),
+    //       ),
+    //     ],
+    //   );
+    // }
+    // FeedProvider feedProvider = Provider.of(context);
+
+    // return Stack(
+    //   children: <Widget>[
+    //     FutureBuilder<AlgoliaQuerySnapshot>(
+    //       future: feedProvider.quickSearch(query),
+    //       builder: (context, snapshot) {
+    //         if (!snapshot.hasData) {
+    //           return Container();
+    //         }
+    //         List<Feed> feeds = snapshot.data.hits
+    //             .where((hit) => hit.highlightResult != null)
+    //             .map((hit) {
+    //           try {
+    //             HighlightResult result =
+    //                 HighlightResult.fromJson(hit.highlightResult);
+    //             return Feed(
+    //                 title: result.title?.value,
+    //                 id: int.parse(hit.objectID),
+    //                 postedTime: DateTime.fromMillisecondsSinceEpoch(
+    //                     hit.data['posted_time'] * 1000),
+    //                 cover: hit.data['cover'],
+    //                 publisher: Publisher(name: hit.data['publisher']));
+    //           } catch (err) {
+    //             print(err);
+    //           }
+    //         }).toList();
+
+    //         return _buildSuggestResults(feeds, context);
+    //       },
+    //     ),
+    //     LayoutBuilder(
+    //       builder: (context, cons) {
+    //         if (cons.minHeight < 300) {
+    //           return Container();
+    //         }
+    //         return Positioned(
+    //           bottom: 0,
+    //           right: 0,
+    //           child: Image.asset(
+    //             "assets/search-by-algolia-dark-background.png",
+    //             width: 400,
+    //             height: 140,
+    //           ),
+    //         );
+    //       },
+    //     )
+    //   ],
+    // );
   }
 
   Widget _buildSuggestResults(List<Feed> feeds, context) {

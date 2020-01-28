@@ -15,7 +15,7 @@ class FeedProvider with ChangeNotifier {
   static String redirectURL =
       "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/redirect";
   static String publisherURL =
-      "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
+      "https://qbiv28lfa0.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
   Algolia algolia;
   Dio client;
   MyDatabase database;
