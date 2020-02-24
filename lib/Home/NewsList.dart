@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:flutter_easyrefresh/material_header.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
@@ -15,33 +17,25 @@ class NewsList extends StatelessWidget {
   final FeedProvider provider;
 
   Widget _renderSmallScreen() {
-    return ListView.separated(
-      shrinkWrap: true,
-      separatorBuilder: (c, i) => Padding(
-        padding: const EdgeInsets.only(left: 40, right: 40),
-        child: Divider(
-          thickness: 2,
+    return Scrollbar(
+      child: ListView.separated(
+        shrinkWrap: true,
+        separatorBuilder: (c, i) => Padding(
+          padding: const EdgeInsets.only(left: 40, right: 40),
+          child: Divider(
+            thickness: 2,
+          ),
         ),
-      ),
-      // key: Key("news_list"),
-      controller: provider.scrollController,
-      itemCount: provider.nextLink != null
-          ? provider.feeds.length + 1
-          : provider.feeds.length,
-      itemBuilder: (context, index) {
-        if (index == provider.feeds.length) {
-          return Center(
-            child: Text(
-              "More on bottom...",
-              key: Key("more_text"),
-            ),
+        // key: Key("news_list"),
+        controller: provider.scrollController,
+        itemCount: provider.feeds.length,
+        itemBuilder: (context, index) {
+          Feed feed = provider.feeds[index];
+          return FeedRow(
+            feed: feed,
           );
-        }
-        Feed feed = provider.feeds[index];
-        return FeedRow(
-          feed: feed,
-        );
-      },
+        },
+      ),
     );
   }
 
@@ -126,27 +120,26 @@ class NewsList extends StatelessWidget {
       );
     }
 
-    return LiquidPullToRefresh(
-      showChildOpacityTransition: false,
-      springAnimationDurationInMilliseconds: 100,
+    return EasyRefresh(
+      header: ClassicalHeader(textColor: Colors.white),
+      footer: ClassicalFooter(textColor: Colors.white),
+      onLoad: () async {
+        await provider.fetchMore();
+      },
       onRefresh: () async {
         await provider.fetchFeeds();
       },
-      child: ListView(
-        shrinkWrap: true,
-        children: [
-          LayoutBuilder(
-            builder: (context, constrains) {
-              if (constrains.maxWidth < 600) {
-                return _renderSmallScreen();
-              } else if (constrains.maxWidth < 900) {
-                return _renderBigScreen(4);
-              } else {
-                return _renderBigScreen(8);
-              }
-            },
-          )
-        ],
+      scrollController: provider.scrollController,
+      child: LayoutBuilder(
+        builder: (context, constrains) {
+          if (constrains.maxWidth < 600) {
+            return _renderSmallScreen();
+          } else if (constrains.maxWidth < 900) {
+            return _renderBigScreen(4);
+          } else {
+            return _renderBigScreen(8);
+          }
+        },
       ),
     );
   }

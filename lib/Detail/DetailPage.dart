@@ -26,6 +26,7 @@ class _DetailPageState extends State<DetailPage> {
   MyDatabase myDatabase;
   double baseFrontSize = 16;
   bool isOpen = false;
+  bool willOpenLink = true;
 
   @override
   void initState() {
@@ -86,6 +87,15 @@ class _DetailPageState extends State<DetailPage> {
                         baseFrontSize = newValue;
                       });
                     },
+                  ),
+                  SwitchListTile(
+                    value: willOpenLink,
+                    onChanged: (v) {
+                      setState(() {
+                        willOpenLink = v;
+                      });
+                    },
+                    title: Text("Selectable"),
                   ),
                   FlatButton(
                     onPressed: () async {
@@ -148,7 +158,7 @@ class _DetailPageState extends State<DetailPage> {
         ],
       ),
       body: SlidingUpPanel(
-        maxHeight: 200,
+        maxHeight: 240,
         minHeight: 80,
         onPanelOpened: () {
           setState(() {
@@ -170,7 +180,6 @@ class _DetailPageState extends State<DetailPage> {
                   key: Key("news_body"),
                   onTapLink: (link) async {
                     Feed feed = await provider.redirect(link);
-                    print(link);
                     if (feed != null) {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (ctx) {
@@ -186,7 +195,7 @@ class _DetailPageState extends State<DetailPage> {
                       }
                     }
                   },
-                  selectable: true,
+                  selectable: willOpenLink,
                   styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(
                     textTheme: theme.textTheme.copyWith(
                       bodyText1: theme.textTheme.bodyText1

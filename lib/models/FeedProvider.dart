@@ -52,19 +52,19 @@ class FeedProvider with ChangeNotifier {
     }
 
     // fetch more listener
-    scrollController.addListener(() async {
-      if (scrollController.position.pixels ==
-              scrollController.position.maxScrollExtent &&
-          nextLink != null) {
-        key.currentState.showSnackBar(
-          SnackBar(
-            content: Text("Loading More"),
-            duration: Duration(milliseconds: 400),
-          ),
-        );
-        await fetchMore();
-      }
-    });
+    // scrollController.addListener(() async {
+    //   if (scrollController.position.pixels ==
+    //           scrollController.position.maxScrollExtent &&
+    //       nextLink != null) {
+    //     key.currentState.showSnackBar(
+    //       SnackBar(
+    //         content: Text("Loading More"),
+    //         duration: Duration(milliseconds: 400),
+    //       ),
+    //     );
+    //     await fetchMore();
+    //   }
+    // });
   }
 
   /// Set up the url and store the data into shared preferences
@@ -134,6 +134,10 @@ class FeedProvider with ChangeNotifier {
     } finally {
       isLoading = false;
       notifyListeners();
+      if (scrollController != null && scrollController.hasClients) {
+        await scrollController.animateTo(0,
+            duration: Duration(milliseconds: 200), curve: Curves.bounceIn);
+      }
     }
   }
 
