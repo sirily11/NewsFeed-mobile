@@ -90,8 +90,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         }
 
         return NewsList(
-          key: Key("news_list"),
-          provider: provider,
+          feeds: provider.feeds,
           refetch: this.fetchTabs,
         );
     }

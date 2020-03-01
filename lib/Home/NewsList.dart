@@ -7,16 +7,16 @@ import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:provider/provider.dart';
 
 class NewsList extends StatelessWidget {
   final Function refetch;
+  final List<Feed> feeds;
 
-  const NewsList({Key key, @required this.provider, @required this.refetch})
-      : super(key: key);
+  const NewsList({@required this.refetch, @required this.feeds});
 
-  final FeedProvider provider;
-
-  Widget _renderSmallScreen() {
+  Widget _renderSmallScreen(BuildContext context) {
+    FeedProvider provider = Provider.of(context);
     return Scrollbar(
       child: ListView.separated(
         shrinkWrap: true,
@@ -28,9 +28,9 @@ class NewsList extends StatelessWidget {
         ),
         // key: Key("news_list"),
         controller: provider.scrollController,
-        itemCount: provider.feeds.length,
+        itemCount: feeds.length,
         itemBuilder: (context, index) {
-          Feed feed = provider.feeds[index];
+          Feed feed = feeds[index];
           return FeedRow(
             feed: feed,
           );
@@ -39,7 +39,9 @@ class NewsList extends StatelessWidget {
     );
   }
 
-  Widget _renderBigScreen(int count) {
+  Widget _renderBigScreen(int count, BuildContext context) {
+    FeedProvider provider = Provider.of(context);
+
     return new StaggeredGridView.countBuilder(
       // key: Key("news_list"),
       shrinkWrap: true,
@@ -100,6 +102,7 @@ class NewsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
+    FeedProvider provider = Provider.of(context);
 
     if (provider.isError) {
       return Container(
@@ -133,11 +136,11 @@ class NewsList extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constrains) {
           if (constrains.maxWidth < 600) {
-            return _renderSmallScreen();
+            return _renderSmallScreen(context);
           } else if (constrains.maxWidth < 900) {
-            return _renderBigScreen(4);
+            return _renderBigScreen(4, context);
           } else {
-            return _renderBigScreen(8);
+            return _renderBigScreen(8, context);
           }
         },
       ),
