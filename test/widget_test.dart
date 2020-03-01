@@ -111,10 +111,10 @@ void main() {
       Widget widget = MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            builder: (_) => feedProvider,
+            create: (_) => feedProvider,
           ),
           ChangeNotifierProvider(
-            builder: (_) => HomeControlProvider(),
+            create: (_) => HomeControlProvider(),
           )
         ],
         child: MaterialApp(
@@ -142,10 +142,10 @@ void main() {
       Widget widget = MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            builder: (_) => feedProvider,
+            create: (_) => feedProvider,
           ),
           ChangeNotifierProvider(
-            builder: (_) => HomeControlProvider(),
+            create: (_) => HomeControlProvider(),
           )
         ],
         child: MaterialApp(
@@ -173,10 +173,10 @@ void main() {
       Widget widget = MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            builder: (_) => feedProvider,
+            create: (_) => feedProvider,
           ),
           ChangeNotifierProvider(
-            builder: (_) => HomeControlProvider(),
+            create: (_) => HomeControlProvider(),
           )
         ],
         child: MaterialApp(
@@ -207,10 +207,10 @@ void main() {
       Widget widget = MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            builder: (_) => feedProvider,
+            create: (_) => feedProvider,
           ),
           ChangeNotifierProvider(
-            builder: (_) => HomeControlProvider(),
+            create: (_) => HomeControlProvider(),
           )
         ],
         child: MaterialApp(
@@ -239,10 +239,10 @@ void main() {
       Widget widget = MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            builder: (_) => feedProvider,
+            create: (_) => feedProvider,
           ),
           ChangeNotifierProvider(
-            builder: (_) => HomeControlProvider(),
+            create: (_) => HomeControlProvider(),
           )
         ],
         child: MaterialApp(

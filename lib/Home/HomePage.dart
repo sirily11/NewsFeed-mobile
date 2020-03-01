@@ -11,6 +11,7 @@ import 'package:newsfeed_mobile/Home/HighlightTextWidget.dart';
 import 'package:newsfeed_mobile/Home/NewsList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
+import 'package:newsfeed_mobile/account/UserPage.dart';
 import 'package:newsfeed_mobile/models/AlgoliaQueryData.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -39,16 +40,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       SharedPreferences.getInstance().then((prefs) async {
         String baseURL = prefs.getString("baseURL");
         if (baseURL != null) {
-          FeedProvider provider = Provider.of(context);
+          FeedProvider provider = Provider.of(context, listen: false);
           provider.setupURL(baseURL);
           await this.fetchTabs();
+          await provider.login();
         }
       });
     }
   }
 
   Future<void> fetchTabs() async {
-    FeedProvider provider = Provider.of(context);
+    FeedProvider provider = Provider.of(context, listen: false);
     await provider.fetchFeeds();
     List<Publisher> publishers = await provider.fetchPublishers();
     if (publishers != null) {
@@ -66,7 +68,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Render app's main screen base on the current buttom nav
   Widget _renderPage({context, provider}) {
-    HomeControlProvider homeControlProvider = Provider.of(context);
+    HomeControlProvider homeControlProvider =
+        Provider.of(context, listen: false);
     FeedProvider provider = Provider.of(context);
 
     switch (homeControlProvider.currentIndex) {
@@ -77,6 +80,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return NewsSourceList(
           refresh: this.fetchTabs,
         );
+
+      case 3:
+        return UserPage();
 
       default:
         if (FeedProvider.baseURL == null) {
@@ -171,6 +177,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               key: Key("settings"),
             ),
             icon: Icon(Icons.settings),
+          ),
+          BottomNavigationBarItem(
+            title: Text(
+              "Account",
+              key: Key("account"),
+            ),
+            icon: Icon(Icons.people),
           ),
         ],
       ),

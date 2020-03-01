@@ -2,6 +2,7 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Database/FeedData.dart';
+import 'package:newsfeed_mobile/Detail/DetailCommentPage.dart';
 import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -24,7 +25,7 @@ class _DetailPageState extends State<DetailPage> {
   bool isStar = false;
   FavoriteFeedData feedData;
   MyDatabase myDatabase;
-  double baseFrontSize = 16;
+  double baseFrontSize = 20;
   bool isOpen = false;
   bool willOpenLink = true;
 
@@ -120,114 +121,142 @@ class _DetailPageState extends State<DetailPage> {
     FeedProvider provider = Provider.of<FeedProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.feed.title),
-        actions: <Widget>[
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DetailWebview(
-                    feed: widget.feed,
-                  ),
-                ),
-              );
-            },
-            icon: Icon(Icons.open_in_browser),
-          ),
-          IconButton(
-            key: Key("star_btn"),
-            color: isStar ? Colors.yellow : null,
-            onPressed: () async {
-              if (isStar) {
-                await myDatabase.deleteFeed(feedData);
-
-                setState(() {
-                  isStar = false;
-                });
-              } else {
-                await myDatabase.addFeed(feedData);
-
-                setState(() {
-                  isStar = true;
-                });
-              }
-            },
-            icon: Icon(Icons.star),
-          )
-        ],
-      ),
-      body: SlidingUpPanel(
-        maxHeight: 240,
-        minHeight: 80,
-        onPanelOpened: () {
-          setState(() {
-            isOpen = true;
-          });
-        },
-        onPanelClosed: () {
-          setState(() {
-            isOpen = false;
-          });
-        },
-        color: theme.primaryColor,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
-        body: Padding(
-          padding: const EdgeInsets.only(bottom: 200),
-          child: widget.feed.content != null
-              ? Markdown(
-                  key: Key("news_body"),
-                  onTapLink: (link) async {
-                    Feed feed = await provider.redirect(link);
-                    if (feed != null) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (ctx) {
-                          return DetailPage(
-                            feed: feed,
-                            myDatabase: myDatabase,
-                          );
-                        }),
-                      );
-                    } else {
-                      if (await canLaunch(link)) {
-                        await launch(link);
-                      }
-                    }
-                  },
-                  selectable: willOpenLink,
-                  styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(
-                    textTheme: theme.textTheme.copyWith(
-                      bodyText1: theme.textTheme.bodyText1
-                          .copyWith(fontSize: baseFrontSize + 10),
-                      // display1: theme.textTheme.headline
-                      //     .copyWith(fontSize: baseFrontSize + 10),
-                      bodyText2: theme.textTheme.bodyText2
-                          .copyWith(fontSize: baseFrontSize),
+        appBar: AppBar(
+          title: Text(widget.feed.title),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => DetailWebview(
+                      feed: widget.feed,
                     ),
-                  )).copyWith(
-                    tableCellsDecoration:
-                        BoxDecoration(color: Colors.transparent),
                   ),
-                  data: widget.feed.content,
-                )
-              : WebView(
-                  initialUrl: widget.feed.link,
-                  javascriptMode: JavascriptMode.unrestricted,
-                ),
-        ),
-        panel: _panel(),
-      ),
-      floatingActionButton: widget.feed.sentiment != null
-          ? Card(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Sentiment Result\n${widget.feed.sentiment?.toStringAsFixed(3)}",
-                ),
-              ),
+                );
+              },
+              icon: Icon(Icons.open_in_browser),
+            ),
+            IconButton(
+              key: Key("star_btn"),
+              color: isStar ? Colors.yellow : null,
+              onPressed: () async {
+                if (isStar) {
+                  await myDatabase.deleteFeed(feedData);
+
+                  setState(() {
+                    isStar = false;
+                  });
+                } else {
+                  await myDatabase.addFeed(feedData);
+
+                  setState(() {
+                    isStar = true;
+                  });
+                }
+              },
+              icon: Icon(Icons.star),
             )
-          : Container(),
-    );
+          ],
+        ),
+        body: SlidingUpPanel(
+          maxHeight: 240,
+          minHeight: 80,
+          onPanelOpened: () {
+            setState(() {
+              isOpen = true;
+            });
+          },
+          onPanelClosed: () {
+            setState(() {
+              isOpen = false;
+            });
+          },
+          color: theme.primaryColor,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
+          body: Padding(
+            padding: const EdgeInsets.only(bottom: 200),
+            child: widget.feed.content != null
+                ? Markdown(
+                    key: Key("news_body"),
+                    onTapLink: (link) async {
+                      Feed feed = await provider.redirect(link);
+                      if (feed != null) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (ctx) {
+                            return DetailPage(
+                              feed: feed,
+                              myDatabase: myDatabase,
+                            );
+                          }),
+                        );
+                      } else {
+                        if (await canLaunch(link)) {
+                          await launch(link);
+                        }
+                      }
+                    },
+                    selectable: false,
+                    styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(
+                      textTheme: theme.textTheme.copyWith(
+                        bodyText1: theme.textTheme.bodyText1
+                            .copyWith(fontSize: baseFrontSize + 10),
+                        // display1: theme.textTheme.headline
+                        //     .copyWith(fontSize: baseFrontSize + 10),
+                        bodyText2: theme.textTheme.bodyText2
+                            .copyWith(fontSize: baseFrontSize),
+                      ),
+                    )).copyWith(
+                      tableCellsDecoration:
+                          BoxDecoration(color: Colors.transparent),
+                    ),
+                    data: widget.feed.content,
+                  )
+                : WebView(
+                    initialUrl: widget.feed.link,
+                    javascriptMode: JavascriptMode.unrestricted,
+                  ),
+          ),
+          panel: _panel(),
+        ),
+        floatingActionButton: widget.feed.feedComments != null
+            ? Padding(
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 80),
+                child: Stack(
+                  children: <Widget>[
+                    FloatingActionButton(
+                      backgroundColor: Colors.blue,
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (c) => DetailCommentPage(
+                              comments: widget.feed.feedComments,
+                              feed: widget.feed,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.message,
+                        color: Theme.of(context).iconTheme.color,
+                      ),
+                    ),
+                    Positioned(
+                      right: 10,
+                      bottom: 35,
+                      child: Text(
+                        "${widget.feed.feedComments.length}",
+                        style: TextStyle(
+                          shadows: [Shadow(blurRadius: 2, color: Colors.black)],
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            : Container());
   }
 }

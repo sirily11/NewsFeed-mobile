@@ -13,10 +13,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          builder: (_) => FeedProvider(),
+          create: (_) => FeedProvider(),
         ),
         ChangeNotifierProvider(
-          builder: (_) => HomeControlProvider(),
+          create: (_) => HomeControlProvider(),
         )
       ],
       child: MaterialApp(
