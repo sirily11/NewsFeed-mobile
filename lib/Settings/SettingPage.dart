@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:newsfeed_mobile/models/FeedSource.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,7 +16,7 @@ class NewsSourceList extends StatefulWidget {
 
 class _NewsSourceListState extends State<NewsSourceList> {
   List<FeedSourceData> feedSources = [];
-  int selectedID = 0;
+  String selectedID = "0";
 
   @override
   void initState() {
@@ -25,7 +25,7 @@ class _NewsSourceListState extends State<NewsSourceList> {
   }
 
   Future fetchFeed() async {
-    var feedSources = await MyDatabase().allFeedSources;
+  
     var prefs = await SharedPreferences.getInstance();
     var selectedLink = prefs.getString("baseURL");
     setState(() {
@@ -69,7 +69,7 @@ class _NewsSourceListState extends State<NewsSourceList> {
                   color: Colors.red,
                   icon: Icons.delete,
                   onTap: () async {
-                    await MyDatabase().deleteFeedSource(feedSources[index - 1]);
+                  
                     await this.fetchFeed();
                   }),
             ],
@@ -131,10 +131,9 @@ class _SettingsPageState extends State<SettingsPage> {
       });
       try {
         FeedProvider provider = Provider.of(context);
-        MyDatabase myDatabase = MyDatabase();
+
         provider.setupURL(url);
         await widget.refresh();
-        myDatabase.addFeedSource(FeedSourceData(link: url, name: title));
         setState(() {
           isLoading = false;
         });

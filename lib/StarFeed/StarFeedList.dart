@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 
 class StarFeedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<FavoriteFeedData>>(
+    return FutureBuilder<List<Feed>>(
       key: Key("star-list"),
-      future: MyDatabase().allFavoriteFeed,
+      // future: MyDatabase().allFavoriteFeed,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return CircularProgressIndicator();
@@ -34,7 +33,7 @@ class StarFeedList extends StatelessWidget {
                               cover: feed.cover,
                               link: feed.link,
                               id: feed.id,
-                              publisher: Publisher(name: feed.publiser),
+                              publisher: feed.publisher,
                               sentiment: feed.sentiment,
                               postedTime: feed.postedTime),
                         ),
@@ -48,7 +47,7 @@ class StarFeedList extends StatelessWidget {
                       child: Card(
                         child: ListTile(
                           title: Text(feed.title),
-                          subtitle: Text(feed.publiser),
+                          subtitle: Text(""),
                           trailing: feed.cover != null
                               ? Image.network(
                                   feed.cover,

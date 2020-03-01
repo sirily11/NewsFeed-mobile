@@ -135,13 +135,14 @@ class NewsList extends StatelessWidget {
       scrollController: provider.scrollController,
       child: LayoutBuilder(
         builder: (context, constrains) {
-          if (constrains.maxWidth < 600) {
-            return _renderSmallScreen(context);
-          } else if (constrains.maxWidth < 900) {
-            return _renderBigScreen(4, context);
-          } else {
-            return _renderBigScreen(8, context);
-          }
+          return _renderSmallScreen(context);
+          // if (constrains.maxWidth < 600) {
+          //   return _renderSmallScreen(context);
+          // } else if (constrains.maxWidth < 900) {
+          //   return _renderBigScreen(4, context);
+          // } else {
+          //   return _renderBigScreen(8, context);
+          // }
         },
       ),
     );

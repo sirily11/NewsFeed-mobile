@@ -4,7 +4,6 @@ import 'package:algolia/algolia.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:random_color/random_color.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -22,7 +21,6 @@ class FeedProvider with ChangeNotifier {
 
   Algolia algolia;
   Dio client;
-  MyDatabase database;
   bool isLoading = false;
   String nextLink;
   String nextCommentLink;
@@ -43,7 +41,7 @@ class FeedProvider with ChangeNotifier {
   User user;
 
   FeedProvider(
-      {Dio client, MyDatabase database, Algolia algolia, String base}) {
+      {Dio client, Algolia algolia, String base}) {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
     if (base != null) {

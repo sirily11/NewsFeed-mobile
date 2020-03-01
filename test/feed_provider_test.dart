@@ -2,32 +2,22 @@ import 'package:algolia/algolia.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:newsfeed_mobile/Database/FeedData.dart';
+import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 
 class MockClient extends Mock implements Dio {}
 
-class MockDatabase extends Mock implements MyDatabase {}
 
 class MockAlgolia extends Mock implements Algolia {}
 
 void main() {
   group("Test Feed Provider", () {
     Dio client = MockClient();
-    MyDatabase database = MockDatabase();
     Algolia algolia = MockAlgolia();
     FeedProvider provider;
 
     setUpAll(() async {
-      when(database.allFavoriteFeed).thenAnswer((_) async => [
-            FavoriteFeedData(
-                id: 1,
-                title: "Title 1",
-                link: "",
-                content: "",
-                postedTime: DateTime.now(),
-                publiser: null)
-          ]);
+     
 
       when(client.get(FeedProvider.publisherURL))
           .thenAnswer((_) async => Response<List>(data: [
@@ -75,8 +65,7 @@ void main() {
           },
         ),
       );
-      provider =
-          FeedProvider(client: client, database: database, algolia: algolia);
+      provider = FeedProvider(client: client, algolia: algolia);
     });
 
     test("Test fetch", () async {

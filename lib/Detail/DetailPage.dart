@@ -1,7 +1,6 @@
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:newsfeed_mobile/Database/FeedData.dart';
 import 'package:newsfeed_mobile/Detail/DetailCommentPage.dart';
 import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
@@ -13,9 +12,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class DetailPage extends StatefulWidget {
   final Feed feed;
-  final MyDatabase myDatabase;
 
-  DetailPage({@required this.feed, this.myDatabase});
+  DetailPage({@required this.feed});
 
   @override
   _DetailPageState createState() => _DetailPageState();
@@ -23,8 +21,6 @@ class DetailPage extends StatefulWidget {
 
 class _DetailPageState extends State<DetailPage> {
   bool isStar = false;
-  FavoriteFeedData feedData;
-  MyDatabase myDatabase;
   double baseFrontSize = 20;
   bool isOpen = false;
   bool willOpenLink = true;
@@ -32,21 +28,6 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
-    myDatabase = widget.myDatabase ?? MyDatabase();
-    feedData = FavoriteFeedData(
-        id: widget.feed.id,
-        title: widget.feed.title,
-        content: widget.feed.content,
-        cover: widget.feed.cover,
-        publiser: widget.feed?.publisher?.name,
-        link: widget.feed.link,
-        postedTime: widget.feed.postedTime,
-        sentiment: widget.feed.sentiment);
-    myDatabase.getFeed(feedData).then((feed) {
-      setState(() {
-        isStar = feed != null;
-      });
-    });
   }
 
   Widget _panel() {
@@ -141,14 +122,10 @@ class _DetailPageState extends State<DetailPage> {
               color: isStar ? Colors.yellow : null,
               onPressed: () async {
                 if (isStar) {
-                  await myDatabase.deleteFeed(feedData);
-
                   setState(() {
                     isStar = false;
                   });
                 } else {
-                  await myDatabase.addFeed(feedData);
-
                   setState(() {
                     isStar = true;
                   });
@@ -186,7 +163,6 @@ class _DetailPageState extends State<DetailPage> {
                           MaterialPageRoute(builder: (ctx) {
                             return DetailPage(
                               feed: feed,
-                              myDatabase: myDatabase,
                             );
                           }),
                         );
