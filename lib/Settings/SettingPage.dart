@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/FeedSource.dart';
 import 'package:provider/provider.dart';
@@ -15,84 +16,89 @@ class NewsSourceList extends StatefulWidget {
 }
 
 class _NewsSourceListState extends State<NewsSourceList> {
-  List<FeedSourceData> feedSources = [];
-  String selectedID = "0";
+  int selectedID = 0;
 
   @override
   void initState() {
     super.initState();
-    this.fetchFeed();
-  }
-
-  Future fetchFeed() async {
-  
-    var prefs = await SharedPreferences.getInstance();
-    var selectedLink = prefs.getString("baseURL");
-    setState(() {
-      this.feedSources = feedSources;
-      if (feedSources != null) {
-        selectedID = feedSources
-            .firstWhere((f) => f.link == selectedLink, orElse: () => null)
-            ?.id;
-      }
+    SharedPreferences.getInstance().then((value) {
+      int id = value.getInt("selectedFeedsourceKey");
+      setState(() {
+        selectedID = id;
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      separatorBuilder: (ctx, int) {
-        return Divider();
-      },
-      itemCount: feedSources.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return FlatButton(
-            onPressed: () async {
-              await Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (ctx) {
-                return SettingsPage(
-                  refresh: widget.refresh,
-                );
-              }));
-              await this.fetchFeed();
-            },
-            child: Text("Add source"),
-          );
-        } else {
-          return Slidable(
-            actionPane: SlidableDrawerActionPane(),
-            actionExtentRatio: 0.25,
-            secondaryActions: <Widget>[
-              IconSlideAction(
-                  caption: 'Delete',
-                  color: Colors.red,
-                  icon: Icons.delete,
-                  onTap: () async {
-                  
-                    await this.fetchFeed();
-                  }),
-            ],
-            child: Container(
-              child: RadioListTile(
-                onChanged: (data) async {
-                  setState(() {
-                    selectedID = data;
-                  });
-                  FeedProvider provider = Provider.of(context);
-                  provider.setupURL(feedSources
-                      .firstWhere((f) => f.id == data, orElse: null)
-                      ?.link);
-                  await widget.refresh();
-                },
-                value: feedSources[index - 1].id,
-                groupValue: selectedID,
-                title: Text(feedSources[index - 1].name),
-                subtitle: Text(feedSources[index - 1].link),
-              ),
-            ),
-          );
+    DatabaseProvider databaseProvider = Provider.of(context);
+    return FutureBuilder<List<FeedSourceData>>(
+      future: databaseProvider.getFeedSources(),
+      builder: (c, snapshot) {
+        if (!snapshot.hasData) {
+          return Center(child: CircularProgressIndicator());
         }
+        List<FeedSourceData> sources = snapshot.data;
+        return ListView.separated(
+          itemBuilder: (c, index) {
+            if (index == 0) {
+              return FlatButton(
+                onPressed: () async {
+                  await Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (ctx) {
+                    return SettingsPage(
+                      refresh: widget.refresh,
+                    );
+                  }));
+                },
+                child: Text("Add source"),
+              );
+            } else {
+              return Slidable(
+                actionPane: SlidableDrawerActionPane(),
+                actionExtentRatio: 0.25,
+                secondaryActions: <Widget>[
+                  IconSlideAction(
+                      caption: 'Delete',
+                      color: Colors.red,
+                      icon: Icons.delete,
+                      onTap: () async {
+                        FeedSourceData deleteSouce = sources.firstWhere(
+                          (element) => element.id == index,
+                        );
+                        await databaseProvider.deleteFeedSource(deleteSouce);
+                        setState(() {
+                          selectedID = -1;
+                        });
+                      }),
+                ],
+                child: Container(
+                  child: RadioListTile<int>(
+                    onChanged: (data) async {
+                      FeedSourceData selectedSource = sources.firstWhere(
+                        (element) => element.id == data,
+                        orElse: () => null,
+                      );
+                      setState(() {
+                        selectedID = data;
+                      });
+                      FeedProvider provider =
+                          Provider.of(context, listen: false);
+                      provider.setupURL(selectedSource.link, key: data);
+                      await widget.refresh();
+                    },
+                    value: sources[index - 1].id,
+                    groupValue: selectedID,
+                    title: Text(sources[index - 1].name),
+                    subtitle: Text(sources[index - 1].link),
+                  ),
+                ),
+              );
+            }
+          },
+          separatorBuilder: (c, i) => Divider(),
+          itemCount: sources.length + 1,
+        );
       },
     );
   }
@@ -130,9 +136,12 @@ class _SettingsPageState extends State<SettingsPage> {
         isLoading = true;
       });
       try {
-        FeedProvider provider = Provider.of(context);
-
+        FeedProvider provider = Provider.of(context, listen: false);
+        DatabaseProvider databaseProvider = Provider.of(context, listen: false);
         provider.setupURL(url);
+        await databaseProvider.addFeedSource(
+          FeedSourceData(name: title, link: url),
+        );
         await widget.refresh();
         setState(() {
           isLoading = false;
@@ -140,6 +149,7 @@ class _SettingsPageState extends State<SettingsPage> {
         await buildSuccessDialog(context);
         Navigator.pop(context);
       } catch (err) {
+        print(err);
         buildErrorDialog(context);
       } finally {
         setState(() {
@@ -167,9 +177,20 @@ class _SettingsPageState extends State<SettingsPage> {
               controller: nameController,
               decoration: InputDecoration(labelText: "Name"),
             ),
-            TextField(
+            TextFormField(
               key: Key("url_field"),
               controller: controller,
+              validator: (text) {
+                if (!text.startsWith("http://") &&
+                    !text.startsWith("https://")) {
+                  return "URL must start with http:// or https://";
+                }
+                if (text.endsWith("/")) {
+                  return "url must no ends with /";
+                }
+                return null;
+              },
+              autovalidate: true,
               decoration: InputDecoration(labelText: "Server URL"),
             ),
             if (isLoading)

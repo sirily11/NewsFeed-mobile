@@ -116,9 +116,10 @@ class Feed {
     data['cover'] = this.cover;
     data['content'] = this.content;
     data['sentiment'] = this.sentiment;
-    data['posted_time'] = this.postedTime;
-    data['publisher'] = this.publisher;
+    data['posted_time'] = this.postedTime.toIso8601String();
+    data['news_publisher'] = this.publisher.toJson();
     data['keywords'] = this.keywords;
+    data['feed_comments'] = this.feedComments.map((e) => e.toJson()).toList();
     return data;
   }
 }

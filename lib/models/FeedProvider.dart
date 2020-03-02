@@ -1,12 +1,8 @@
-import 'dart:convert';
-
-import 'package:algolia/algolia.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:random_color/random_color.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedProvider with ChangeNotifier {
@@ -19,7 +15,6 @@ class FeedProvider with ChangeNotifier {
   String signupURL;
   String commentsURL;
 
-  Algolia algolia;
   Dio client;
   bool isLoading = false;
   String nextLink;
@@ -40,8 +35,7 @@ class FeedProvider with ChangeNotifier {
 
   User user;
 
-  FeedProvider(
-      {Dio client, Algolia algolia, String base}) {
+  FeedProvider({Dio client, String base}) {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
     if (base != null) {
@@ -164,7 +158,7 @@ class FeedProvider with ChangeNotifier {
   }
 
   /// Set up the url and store the data into shared preferences
-  void setupURL(String base) async {
+  void setupURL(String base, {int key, shouldSet = true}) async {
     baseURL = "$base/news/";
     redirectURL = "$base/redirect/";
     publisherURL = "$base/publisher/";
@@ -172,7 +166,12 @@ class FeedProvider with ChangeNotifier {
     signupURL = "$base/accounts/";
     commentsURL = "$base/comment/";
     var prefs = await SharedPreferences.getInstance();
-    prefs.setString("baseURL", base);
+    if (shouldSet) {
+      await prefs.setString("baseURL", base);
+    }
+    if (key != null) {
+      await prefs.setInt("selectedFeedsourceKey", key);
+    }
   }
 
   /// Back to the top of the list
@@ -337,13 +336,6 @@ class FeedProvider with ChangeNotifier {
     this.backToTop();
     notifyListeners();
     await this.fetchFeeds();
-  }
-
-  /// Quick search. Using Algolia
-  Future<AlgoliaQuerySnapshot> quickSearch(String keyword) async {
-    AlgoliaQuery query = algolia.instance.index("news_feed").search(keyword);
-    AlgoliaQuerySnapshot snap = await query.getObjects();
-    return snap;
   }
 
   Future<Feed> redirect(String link) async {

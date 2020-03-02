@@ -39,66 +39,6 @@ class NewsList extends StatelessWidget {
     );
   }
 
-  Widget _renderBigScreen(int count, BuildContext context) {
-    FeedProvider provider = Provider.of(context);
-
-    return new StaggeredGridView.countBuilder(
-      // key: Key("news_list"),
-      shrinkWrap: true,
-      controller: provider.scrollController,
-      crossAxisCount: count,
-      itemCount: provider.nextLink != null
-          ? provider.feeds.length + 1
-          : provider.feeds.length,
-      itemBuilder: (BuildContext context, int index) {
-        if (index == provider.feeds.length) {
-          return Center(
-            child: Text(
-              "More on bottom...",
-              key: Key("more_text"),
-            ),
-          );
-        }
-
-        Feed feed = provider.feeds[index];
-        return GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) {
-                  return DetailPage(
-                    feed: feed,
-                  );
-                },
-              ),
-            );
-          },
-          child: Card(
-            child: FeedRow(
-              feed: feed,
-            ),
-          ),
-        );
-      },
-      staggeredTileBuilder: (int index) {
-        if (index == provider.feeds.length) {
-          return StaggeredTile.count(2, 1);
-        }
-        Feed feed = provider.feeds[index];
-        double randomValue = index.isEven ? 0.3 : 0.9;
-        double baseValue = count > 4 ? 3 : 2.5;
-
-        return StaggeredTile.count(
-            feed.cover != null ? 2 : 2,
-            feed.cover != null
-                ? baseValue + randomValue
-                : baseValue - 2.2 + randomValue);
-      },
-      mainAxisSpacing: 4.0,
-      crossAxisSpacing: 4.0,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
@@ -133,18 +73,7 @@ class NewsList extends StatelessWidget {
         await provider.fetchFeeds();
       },
       scrollController: provider.scrollController,
-      child: LayoutBuilder(
-        builder: (context, constrains) {
-          return _renderSmallScreen(context);
-          // if (constrains.maxWidth < 600) {
-          //   return _renderSmallScreen(context);
-          // } else if (constrains.maxWidth < 900) {
-          //   return _renderBigScreen(4, context);
-          // } else {
-          //   return _renderBigScreen(8, context);
-          // }
-        },
-      ),
+      child: _renderSmallScreen(context),
     );
   }
 }

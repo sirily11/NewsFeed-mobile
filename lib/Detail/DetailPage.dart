@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Detail/DetailCommentPage.dart';
 import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
+import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +29,14 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
+    DatabaseProvider databaseProvider = Provider.of(context, listen: false);
+    databaseProvider.getFeed(widget.feed.id).then((feed) {
+      if (feed != null) {
+        setState(() {
+          isStar = true;
+        });
+      }
+    });
   }
 
   Widget _panel() {
@@ -121,11 +130,16 @@ class _DetailPageState extends State<DetailPage> {
               key: Key("star_btn"),
               color: isStar ? Colors.yellow : null,
               onPressed: () async {
+                DatabaseProvider provider = Provider.of(context, listen: false);
                 if (isStar) {
+                  // delete feed from db
+                  await provider.deleteFeedFromDB(widget.feed);
                   setState(() {
                     isStar = false;
                   });
                 } else {
+                  // add feed to db
+                  await provider.addFeedToDB(widget.feed);
                   setState(() {
                     isStar = true;
                   });

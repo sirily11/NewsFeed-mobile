@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:newsfeed_mobile/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class StarFeedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    DatabaseProvider databaseProvider = Provider.of(context);
     return FutureBuilder<List<Feed>>(
       key: Key("star-list"),
-      // future: MyDatabase().allFavoriteFeed,
+      future: databaseProvider.getListFeeds(),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(snapshot.error.toString()),
+          );
+        }
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return Center(child: CircularProgressIndicator());
         } else {
           if (snapshot.data.length == 0) {
             return Center(
@@ -27,35 +36,26 @@ class StarFeedList extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => DetailPage(
-                          feed: Feed(
-                              title: feed.title,
-                              content: feed.content,
-                              cover: feed.cover,
-                              link: feed.link,
-                              id: feed.id,
-                              publisher: feed.publisher,
-                              sentiment: feed.sentiment,
-                              postedTime: feed.postedTime),
+                          feed: feed,
                         ),
                       ),
                     );
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      height: 100,
-                      child: Card(
-                        child: ListTile(
-                          title: Text(feed.title),
-                          subtitle: Text(""),
-                          trailing: feed.cover != null
-                              ? Image.network(
-                                  feed.cover,
-                                  width: 130,
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
+                    child: Card(
+                      child: ListTile(
+                        title: Text(feed.title),
+                        subtitle: Text(
+                          "${feed.publisher.name}\n${getTime(feed.postedTime)}",
                         ),
+                        trailing: feed.cover != null
+                            ? Image.network(
+                                feed.cover,
+                                width: 130,
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
                     ),
                   ),

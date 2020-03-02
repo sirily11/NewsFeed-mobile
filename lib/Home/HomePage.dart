@@ -1,8 +1,8 @@
 import 'dart:async';
-
-import 'package:algolia/algolia.dart';
+import 'dart:io';
 import 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
 import 'package:debounce_throttle/debounce_throttle.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
@@ -12,14 +12,17 @@ import 'package:newsfeed_mobile/Home/NewsList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/account/UserPage.dart';
-import 'package:newsfeed_mobile/models/AlgoliaQueryData.dart';
+import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_scaffold/responsive_scaffold.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+const kTabletWidth = 720.0;
 
 class HomePage extends StatefulWidget {
   /// This is the variable for testing. Set this to true if
@@ -39,12 +42,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     if (!widget.isError) {
       SharedPreferences.getInstance().then((prefs) async {
         String baseURL = prefs.getString("baseURL");
+
         if (baseURL != null) {
           FeedProvider provider = Provider.of(context, listen: false);
-          provider.setupURL(baseURL);
+          provider.setupURL(baseURL, shouldSet: false);
           await this.fetchTabs();
           await provider.login();
         }
+        DatabaseProvider databaseProvider = Provider.of(context, listen: false);
+        await databaseProvider.init();
       });
     }
   }
@@ -100,92 +106,121 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     FeedProvider provider = Provider.of(context);
     HomeControlProvider homeControlProvider = Provider.of(context);
+    return LayoutBuilder(
+      builder: (context, constrains) {
+        if (Platform.isIOS ||
+            Platform.isAndroid ||
+            kIsWeb && constrains.maxWidth < kTabletWidth) {
+          return Scaffold(
+            key: provider.key,
+            appBar: buildCustomAppBar(context),
+            body: AnimatedSwitcher(
+              child: _renderPage(context: context, provider: provider),
+              duration: Duration(milliseconds: 300),
+            ),
+            bottomNavigationBar: buildBottomNavigationBar(),
+          );
+        } else {
+          return Scaffold(
+            key: provider.key,
+            appBar: buildCustomAppBar(context),
+            body: AnimatedSwitcher(
+              child: _renderPage(context: context, provider: provider),
+              duration: Duration(milliseconds: 300),
+            ),
+            bottomNavigationBar: buildBottomNavigationBar(),
+          );
+        }
+      },
+    );
+  }
 
-    return Scaffold(
-      key: provider.key,
-      appBar: CustomAppBar(
-        onTap: () {
-          if (homeControlProvider.currentIndex == 0) {
-            provider.backToTop();
-          }
-        },
-        appBar: AppBar(
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {
-                showSearch(context: context, delegate: NewsSearch());
-              },
-            )
-          ],
-          title: AnimatedSwitcher(
-            duration: Duration(milliseconds: 300),
-            child: provider.isLoading
-                ? JumpingText("Loading")
-                : Text(
-                    provider.publishers[provider.currentSelectionIndex].name,
-                    key: Key("title"),
-                  ),
-          ),
-          bottom: tabController != null && homeControlProvider.currentIndex == 0
-              ? TabBar(
-                  indicator: BubbleTabIndicator(
-                    indicatorHeight: 25,
-                    indicatorColor: Colors.blueAccent,
-                  ),
-                  controller: tabController,
-                  isScrollable: true,
-                  tabs: provider.publishers
-                      .map(
-                        (p) => Tab(
-                          child: Text(p.name),
-                        ),
-                      )
-                      .toList(),
-                )
-              : null,
-        ),
-      ),
-      body: AnimatedSwitcher(
-        child: _renderPage(context: context, provider: provider),
-        duration: Duration(milliseconds: 300),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: homeControlProvider.currentIndex,
-        onTap: (index) {
-          homeControlProvider.currentIndex = index;
-        },
-        items: [
-          BottomNavigationBarItem(
-            title: Text(
-              "News",
-              key: Key("news"),
-            ),
-            icon: Icon(Icons.home),
-          ),
-          BottomNavigationBarItem(
-            title: Text(
-              "Favorite",
-              key: Key("favorite"),
-            ),
-            icon: Icon(Icons.star),
-          ),
-          BottomNavigationBarItem(
-            title: Text(
-              "Settings",
-              key: Key("settings"),
-            ),
-            icon: Icon(Icons.settings),
-          ),
-          BottomNavigationBarItem(
-            title: Text(
-              "Account",
-              key: Key("account"),
-            ),
-            icon: Icon(Icons.people),
-          ),
+  CustomAppBar buildCustomAppBar(BuildContext context) {
+    FeedProvider provider = Provider.of(context);
+    HomeControlProvider homeControlProvider = Provider.of(context);
+    return CustomAppBar(
+      onTap: () {
+        if (homeControlProvider.currentIndex == 0) {
+          provider.backToTop();
+        }
+      },
+      appBar: AppBar(
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(context: context, delegate: NewsSearch());
+            },
+          )
         ],
+        title: AnimatedSwitcher(
+          duration: Duration(milliseconds: 300),
+          child: provider.isLoading
+              ? JumpingText("Loading")
+              : Text(
+                  provider.publishers[provider.currentSelectionIndex].name,
+                  key: Key("title"),
+                ),
+        ),
+        bottom: tabController != null && homeControlProvider.currentIndex == 0
+            ? TabBar(
+                indicator: BubbleTabIndicator(
+                  indicatorHeight: 25,
+                  indicatorColor: Colors.blueAccent,
+                ),
+                controller: tabController,
+                isScrollable: true,
+                tabs: provider.publishers
+                    .map(
+                      (p) => Tab(
+                        child: Text(p.name),
+                      ),
+                    )
+                    .toList(),
+              )
+            : null,
       ),
+    );
+  }
+
+  BottomNavigationBar buildBottomNavigationBar() {
+    FeedProvider provider = Provider.of(context);
+    HomeControlProvider homeControlProvider = Provider.of(context);
+    return BottomNavigationBar(
+      currentIndex: homeControlProvider.currentIndex,
+      onTap: (index) {
+        homeControlProvider.currentIndex = index;
+      },
+      items: [
+        BottomNavigationBarItem(
+          title: Text(
+            "News",
+            key: Key("news"),
+          ),
+          icon: Icon(Icons.home),
+        ),
+        BottomNavigationBarItem(
+          title: Text(
+            "Favorite",
+            key: Key("favorite"),
+          ),
+          icon: Icon(Icons.star),
+        ),
+        BottomNavigationBarItem(
+          title: Text(
+            "Settings",
+            key: Key("settings"),
+          ),
+          icon: Icon(Icons.settings),
+        ),
+        BottomNavigationBarItem(
+          title: Text(
+            "Account",
+            key: Key("account"),
+          ),
+          icon: Icon(Icons.people),
+        ),
+      ],
     );
   }
 }
@@ -260,71 +295,6 @@ class NewsSearch extends SearchDelegate<String> {
     return Center(
       child: Text("Press Search"),
     );
-
-    // if (query.isEmpty) {
-    //   return Stack(
-    //     children: <Widget>[
-    //       Positioned(
-    //         bottom: 10,
-    //         right: 0,
-    //         child: Image.asset(
-    //           "assets/search-by-algolia-dark-background.png",
-    //           width: 400,
-    //           height: 140,
-    //         ),
-    //       ),
-    //     ],
-    //   );
-    // }
-    // FeedProvider feedProvider = Provider.of(context);
-
-    // return Stack(
-    //   children: <Widget>[
-    //     FutureBuilder<AlgoliaQuerySnapshot>(
-    //       future: feedProvider.quickSearch(query),
-    //       builder: (context, snapshot) {
-    //         if (!snapshot.hasData) {
-    //           return Container();
-    //         }
-    //         List<Feed> feeds = snapshot.data.hits
-    //             .where((hit) => hit.highlightResult != null)
-    //             .map((hit) {
-    //           try {
-    //             HighlightResult result =
-    //                 HighlightResult.fromJson(hit.highlightResult);
-    //             return Feed(
-    //                 title: result.title?.value,
-    //                 id: int.parse(hit.objectID),
-    //                 postedTime: DateTime.fromMillisecondsSinceEpoch(
-    //                     hit.data['posted_time'] * 1000),
-    //                 cover: hit.data['cover'],
-    //                 publisher: Publisher(name: hit.data['publisher']));
-    //           } catch (err) {
-    //             print(err);
-    //           }
-    //         }).toList();
-
-    //         return _buildSuggestResults(feeds, context);
-    //       },
-    //     ),
-    //     LayoutBuilder(
-    //       builder: (context, cons) {
-    //         if (cons.minHeight < 300) {
-    //           return Container();
-    //         }
-    //         return Positioned(
-    //           bottom: 0,
-    //           right: 0,
-    //           child: Image.asset(
-    //             "assets/search-by-algolia-dark-background.png",
-    //             width: 400,
-    //             height: 140,
-    //           ),
-    //         );
-    //       },
-    //     )
-    //   ],
-    // );
   }
 
   Widget _buildSuggestResults(List<Feed> feeds, context) {

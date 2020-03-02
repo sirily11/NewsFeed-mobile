@@ -1,24 +1,16 @@
-import 'package:algolia/algolia.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
-import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 
 class MockClient extends Mock implements Dio {}
 
-
-class MockAlgolia extends Mock implements Algolia {}
-
 void main() {
   group("Test Feed Provider", () {
     Dio client = MockClient();
-    Algolia algolia = MockAlgolia();
     FeedProvider provider;
 
     setUpAll(() async {
-     
-
       when(client.get(FeedProvider.publisherURL))
           .thenAnswer((_) async => Response<List>(data: [
                 {"id": 1, "name": "游民星空"},
@@ -65,7 +57,7 @@ void main() {
           },
         ),
       );
-      provider = FeedProvider(client: client, algolia: algolia);
+      provider = FeedProvider(client: client);
     });
 
     test("Test fetch", () async {

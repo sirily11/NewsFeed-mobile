@@ -44,7 +44,11 @@ class DetailCommentPage extends StatelessWidget {
                   }),
               Positioned(
                 bottom: 0,
-                child: CommentReplyField(feed: this.feed,),
+                child: provider.user != null
+                    ? CommentReplyField(
+                        feed: this.feed,
+                      )
+                    : Container(),
               )
             ],
           ),
