@@ -5,10 +5,12 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/Detail/DetailPageLarge.dart';
 import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
 import 'package:newsfeed_mobile/Home/HelpCardList.dart';
 import 'package:newsfeed_mobile/Home/HighlightTextWidget.dart';
 import 'package:newsfeed_mobile/Home/NewsList.dart';
+import 'package:newsfeed_mobile/Home/TwoColumnNewsList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/account/UserPage.dart';
@@ -36,6 +38,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TabController tabController;
+  int selectedFeedIndex;
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +76,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
+  /// Call this function when
+  /// you have two column layout
+  void _selectFeed(int index) {
+    setState(() {
+      selectedFeedIndex = index;
+    });
+  }
+
   /// Render app's main screen base on the current buttom nav
   Widget _renderPage({context, provider}) {
     HomeControlProvider homeControlProvider =
@@ -95,9 +107,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           return HelpCardList();
         }
 
-        return NewsList(
-          feeds: provider.feeds,
-          refetch: this.fetchTabs,
+        return LayoutBuilder(
+          builder: (c, constrains) {
+            if (Platform.isIOS ||
+                Platform.isAndroid ||
+                kIsWeb && constrains.maxWidth < kTabletWidth) {
+              return NewsList(
+                feeds: provider.feeds,
+                refetch: this.fetchTabs,
+              );
+            } else {
+              return TwoColumnNewsList(
+                feeds: provider.feeds,
+                selectFeed: _selectFeed,
+                refetch: this.fetchTabs,
+              );
+            }
+          },
         );
     }
   }
@@ -121,14 +147,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             bottomNavigationBar: buildBottomNavigationBar(),
           );
         } else {
-          return Scaffold(
-            key: provider.key,
-            appBar: buildCustomAppBar(context),
-            body: AnimatedSwitcher(
-              child: _renderPage(context: context, provider: provider),
-              duration: Duration(milliseconds: 300),
-            ),
-            bottomNavigationBar: buildBottomNavigationBar(),
+          return Row(
+            children: <Widget>[
+              Expanded(
+                flex: 3,
+                child: Material(
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    child: Scaffold(
+                      key: provider.key,
+                      appBar: buildCustomAppBar(context),
+                      body: AnimatedSwitcher(
+                        child:
+                            _renderPage(context: context, provider: provider),
+                        duration: Duration(milliseconds: 300),
+                      ),
+                      bottomNavigationBar: buildBottomNavigationBar(),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 7,
+                child: selectedFeedIndex != null
+                    ? DetailPageLargeScreen(
+                        feed: provider.feeds[selectedFeedIndex],
+                      )
+                    : Container(
+                        height: double.infinity,
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: Text(""),
+                      ),
+              ),
+            ],
           );
         }
       },
