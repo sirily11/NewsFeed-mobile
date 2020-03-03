@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/Detail/DetailPageLarge.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
+import 'package:newsfeed_mobile/master-detail/master_detail_route.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
@@ -12,12 +15,10 @@ typedef SelectFeed(int index);
 class TwoColumnNewsList extends StatelessWidget {
   final Function refetch;
   final List<Feed> feeds;
-  final SelectFeed selectFeed;
 
   const TwoColumnNewsList({
     @required this.refetch,
     @required this.feeds,
-    @required this.selectFeed,
   });
 
   Widget _renderSmallScreen(BuildContext context) {
@@ -37,8 +38,6 @@ class TwoColumnNewsList extends StatelessWidget {
         itemBuilder: (context, index) {
           Feed feed = feeds[index];
           return BigScreenFeedRow(
-            index: index,
-            selectFeed: selectFeed,
             feed: feed,
           );
         },
@@ -86,12 +85,9 @@ class TwoColumnNewsList extends StatelessWidget {
 }
 
 class BigScreenFeedRow extends StatelessWidget {
-  int index;
   final Feed feed;
-  final SelectFeed selectFeed;
 
-  BigScreenFeedRow(
-      {@required this.feed, @required this.selectFeed, @required this.index});
+  BigScreenFeedRow({@required this.feed});
 
   Widget _renderImage(context) {
     if (feed.cover != null) {
@@ -111,7 +107,14 @@ class BigScreenFeedRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       onTap: () {
-        selectFeed(index);
+        Navigator.push(
+          context,
+          DetailRoute(
+              builder: (c) => DetailPageLargeScreen(
+                    feed: feed,
+                  ),
+              forceRenderTabletView: true),
+        );
       },
       title: Text("${feed.title}"),
       subtitle: Text("${feed.publisher.name}\n${getTime(feed.postedTime)}"),

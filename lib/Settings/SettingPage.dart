@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:newsfeed_mobile/master-detail/master_detail_route.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/FeedSource.dart';
@@ -44,12 +47,23 @@ class _NewsSourceListState extends State<NewsSourceList> {
             if (index == 0) {
               return FlatButton(
                 onPressed: () async {
-                  await Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (ctx) {
-                    return SettingsPage(
-                      refresh: widget.refresh,
+                  if (Platform.isMacOS) {
+                    await Navigator.of(context).push(
+                      DetailRoute(builder: (ctx) {
+                        return SettingsPage(
+                          refresh: widget.refresh,
+                        );
+                      }),
                     );
-                  }));
+                  } else {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (ctx) {
+                        return SettingsPage(
+                          refresh: widget.refresh,
+                        );
+                      }),
+                    );
+                  }
                 },
                 child: Text("Add source"),
               );
@@ -165,6 +179,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: BackButton(),
         title: Text("Add news source"),
       ),
       body: Padding(

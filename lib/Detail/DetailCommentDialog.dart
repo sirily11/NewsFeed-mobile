@@ -40,8 +40,8 @@ class DetailCommentDialog extends StatelessWidget {
                   }),
             ),
             Container(
-              height: 100,
-              width: 400,
+              height: 200,
+              width: MediaQuery.of(context).size.width,
               child: provider.user != null
                   ? CommentReplyField(
                       feed: this.feed,

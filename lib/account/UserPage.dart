@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:json_schema_form/JSONSchemaForm.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:newsfeed_mobile/account/MyCommentPage.dart';
+import 'package:newsfeed_mobile/master-detail/master_detail_route.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -93,12 +96,21 @@ class _UserPageState extends State<UserPage> {
           Divider(),
           ListTile(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (c) => CommentPage(),
-                ),
-              );
+              if (Platform.isMacOS) {
+                Navigator.push(
+                  context,
+                  DetailRoute(
+                    builder: (c) => CommentPage(),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (c) => CommentPage(),
+                  ),
+                );
+              }
             },
             title: Text("View All My Comments"),
           ),

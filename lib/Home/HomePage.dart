@@ -14,6 +14,7 @@ import 'package:newsfeed_mobile/Home/TwoColumnNewsList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/account/UserPage.dart';
+import 'package:newsfeed_mobile/master-detail/master_detail_container.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -38,7 +39,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TabController tabController;
-  int selectedFeedIndex;
 
   @override
   void initState() {
@@ -73,14 +73,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (tabController.indexIsChanging) {
         await provider.setCurrentSelectionIndex(tabController.index);
       }
-    });
-  }
-
-  /// Call this function when
-  /// you have two column layout
-  void _selectFeed(int index) {
-    setState(() {
-      selectedFeedIndex = index;
     });
   }
 
@@ -119,7 +111,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             } else {
               return TwoColumnNewsList(
                 feeds: provider.feeds,
-                selectFeed: _selectFeed,
                 refetch: this.fetchTabs,
               );
             }
@@ -147,41 +138,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             bottomNavigationBar: buildBottomNavigationBar(),
           );
         } else {
-          return Row(
-            children: <Widget>[
-              Expanded(
-                flex: 3,
-                child: Material(
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
-                    ),
-                    child: Scaffold(
-                      key: provider.key,
-                      appBar: buildCustomAppBar(context),
-                      body: AnimatedSwitcher(
-                        child:
-                            _renderPage(context: context, provider: provider),
-                        duration: Duration(milliseconds: 300),
-                      ),
-                      bottomNavigationBar: buildBottomNavigationBar(),
-                    ),
+          return MasterDetailContainer(
+            forceRenderTabletView: true,
+            child: Material(
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                child: Scaffold(
+                  key: provider.key,
+                  appBar: buildCustomAppBar(context),
+                  body: AnimatedSwitcher(
+                    child: _renderPage(context: context, provider: provider),
+                    duration: Duration(milliseconds: 300),
                   ),
+                  bottomNavigationBar: buildBottomNavigationBar(),
                 ),
               ),
-              Expanded(
-                flex: 7,
-                child: selectedFeedIndex != null
-                    ? DetailPageLargeScreen(
-                        feed: provider.feeds[selectedFeedIndex],
-                      )
-                    : Container(
-                        height: double.infinity,
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        child: Text(""),
-                      ),
-              ),
-            ],
+            ),
           );
         }
       },

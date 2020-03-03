@@ -28,6 +28,8 @@ class _CommentReplyFieldState extends State<CommentReplyField> {
             Expanded(
               flex: 9,
               child: TextField(
+                maxLines: 4,
+                keyboardType: TextInputType.multiline,
                 controller: controller,
                 decoration: InputDecoration(labelText: "Comment"),
               ),

@@ -46,6 +46,7 @@ class _DetailPageLargeScreenState extends State<DetailPageLargeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.feed.title),
+        leading: BackButton(),
         actions: <Widget>[
           IconButton(
             onPressed: () async {
@@ -123,8 +124,8 @@ class _DetailPageLargeScreenState extends State<DetailPageLargeScreen> {
                         title:
                             Text("${widget.feed.feedComments.length} Comments"),
                         content: Container(
-                          height: 400,
-                          width: 400,
+                          height: MediaQuery.of(context).size.height,
+                          width: MediaQuery.of(context).size.width / 2,
                           child: DetailCommentDialog(
                             comments: widget.feed.feedComments,
                             feed: widget.feed,

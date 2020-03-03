@@ -29,6 +29,7 @@ class _CommentPageState extends State<CommentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("My Comments"),
+        leading: BackButton(),
       ),
       body: ModalProgressHUD(
         inAsyncCall: provider.isLoading,
