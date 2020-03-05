@@ -160,7 +160,8 @@ class FeedProvider with ChangeNotifier {
   /// Set up the url and store the data into shared preferences
   void setupURL(String base, {int key, shouldSet = true}) async {
     baseURL = "$base/news/";
-    redirectURL = "$base/redirect/";
+    // Note: No back slash at the end
+    redirectURL = "$base/redirect";
     publisherURL = "$base/publisher/";
     loginURL = "$base/api/token/";
     signupURL = "$base/accounts/";
