@@ -13,8 +13,9 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class DetailPage extends StatefulWidget {
   final Feed feed;
+  final bool isTest;
 
-  DetailPage({@required this.feed});
+  DetailPage({@required this.feed, this.isTest = false});
 
   @override
   _DetailPageState createState() => _DetailPageState();
@@ -29,14 +30,16 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
-    DatabaseProvider databaseProvider = Provider.of(context, listen: false);
-    databaseProvider.getFeed(widget.feed.id).then((feed) {
-      if (feed != null) {
-        setState(() {
-          isStar = true;
-        });
-      }
-    });
+    if (!widget.isTest) {
+      DatabaseProvider databaseProvider = Provider.of(context, listen: false);
+      databaseProvider.getFeed(widget.feed.id).then((feed) {
+        if (feed != null) {
+          setState(() {
+            isStar = true;
+          });
+        }
+      });
+    }
   }
 
   Widget _panel() {

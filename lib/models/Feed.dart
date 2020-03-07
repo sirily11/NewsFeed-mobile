@@ -95,11 +95,13 @@ class Feed {
     postedTime = DateTime.parse(json['posted_time']);
     publisher_id = json['publisher'];
     publisher = Publisher.fromJson(json['news_publisher']);
-    feedComments = List<FeedComment>.from(
-      json["feed_comments"].map(
-        (x) => FeedComment.fromJson(x),
-      ),
-    );
+    feedComments = json['feed_comments'] != null
+        ? List<FeedComment>.from(
+            json["feed_comments"].map(
+              (x) => FeedComment.fromJson(x),
+            ),
+          )
+        : null;
 
     if (json["keywords"] != null) {
       keywords = List<String>.from(json["keywords"].map((x) => x));
