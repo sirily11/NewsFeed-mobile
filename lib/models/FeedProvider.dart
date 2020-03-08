@@ -3,17 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:random_color/random_color.dart';
+import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedProvider with ChangeNotifier {
   static String baseURL;
-  static String redirectURL =
-      "https://812h5181yb.execute-api.us-east-1.amazonaws.com/dev/news-feed/redirect";
+  static String redirectURL;
   static String publisherURL =
       "https://qbiv28lfa0.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
   String loginURL;
   String signupURL;
   String commentsURL;
+  String shareURL;
 
   Dio client;
   bool isLoading = false;
@@ -166,6 +167,7 @@ class FeedProvider with ChangeNotifier {
     loginURL = "$base/api/token/";
     signupURL = "$base/accounts/";
     commentsURL = "$base/comment/";
+    shareURL = "$base/share/";
     var prefs = await SharedPreferences.getInstance();
     if (shouldSet) {
       await prefs.setString("baseURL", base);
@@ -173,6 +175,11 @@ class FeedProvider with ChangeNotifier {
     if (key != null) {
       await prefs.setInt("selectedFeedsourceKey", key);
     }
+  }
+
+  Future<void> share(Feed feed) async {
+    String url = "$shareURL${feed.id}/";
+    await Share.share('$url', subject: "News: ${feed.title}");
   }
 
   /// Back to the top of the list

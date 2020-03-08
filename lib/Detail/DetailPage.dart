@@ -82,22 +82,11 @@ class _DetailPageState extends State<DetailPage> {
                       });
                     },
                   ),
-                  SwitchListTile(
-                    value: willOpenLink,
-                    onChanged: (v) {
-                      setState(() {
-                        willOpenLink = v;
-                      });
-                    },
-                    title: Text("Selectable"),
-                  ),
                   FlatButton(
                     onPressed: () async {
-                      final DynamicLinkParameters parameters =
-                          DynamicLinkParameters(
-                              uriPrefix:
-                                  "https://mobile.sirileepage.com/news/mobile",
-                              link: Uri.parse(""));
+                      FeedProvider feedProvider =
+                          Provider.of(context, listen: false);
+                      feedProvider.share(widget.feed);
                     },
                     child: Text("Share to others"),
                   )
@@ -153,7 +142,7 @@ class _DetailPageState extends State<DetailPage> {
         ],
       ),
       body: SlidingUpPanel(
-        maxHeight: 240,
+        maxHeight: 200,
         minHeight: 80,
         onPanelOpened: () {
           setState(() {
