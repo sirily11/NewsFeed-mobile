@@ -1,4 +1,9 @@
-import 'package:newsfeed_mobile/models/AlgoliaQueryData.dart';
+import 'package:flutter/material.dart';
+import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Get time difference
 /// When days is greater than 365, then return in years
@@ -37,24 +42,20 @@ String getTime(DateTime dateTime, {DateTime after}) {
   return "${timeDiff.inHours} hours ago";
 }
 
-List<HighlightText> getHighlightText(String text) {
-  var regex = RegExp(r"\<em>(.*?)<\/em>");
-  Iterable<Match> matches = regex.allMatches(text);
-  List<String> textWithoutMatches = text.split(regex);
-  List<String> textWithMatches = matches.map((m) {
-    return m.group(0);
-  }).toList();
-  List<HighlightText> textList = [];
-  textWithoutMatches.asMap().forEach((i, t) {
-    if (t != "") {
-      textList.add(HighlightText(text: t));
+Future redirect(String link, BuildContext context) async {
+  FeedProvider provider = Provider.of(context, listen: false);
+  Feed feed = await provider.redirect(link);
+  if (feed != null) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (ctx) {
+        return DetailPage(
+          feed: feed,
+        );
+      }),
+    );
+  } else {
+    if (await canLaunch(link)) {
+      await launch(link);
     }
-    if (i < textWithMatches.length) {
-      String matchStr = textWithMatches[i];
-      matchStr = matchStr.replaceAll("<em>", "");
-      matchStr = matchStr.replaceAll("</em>", "");
-      textList.add(HighlightText(text: matchStr, isBold: true));
-    }
-  });
-  return textList;
+  }
 }

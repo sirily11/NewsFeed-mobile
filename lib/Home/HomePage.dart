@@ -5,15 +5,13 @@ import 'package:debounce_throttle/debounce_throttle.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
-import 'package:newsfeed_mobile/Detail/DetailPageLarge.dart';
-import 'package:newsfeed_mobile/Home/CustomAppbar.dart';
+import 'package:newsfeed_mobile/Headline/headline.dart';
+import 'package:newsfeed_mobile/Home/headline/NewsList.dart';
+import 'package:newsfeed_mobile/Home/parts/CustomAppbar.dart';
 import 'package:newsfeed_mobile/Home/HelpCardList.dart';
-import 'package:newsfeed_mobile/Home/HighlightTextWidget.dart';
-import 'package:newsfeed_mobile/Home/NewsList.dart';
 import 'package:newsfeed_mobile/Home/TwoColumnNewsList.dart';
-import 'package:newsfeed_mobile/Settings/SettingPage.dart';
+import 'package:newsfeed_mobile/Home/parts/drawer.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
-import 'package:newsfeed_mobile/account/UserPage.dart';
 import 'package:newsfeed_mobile/master-detail/master_detail_container.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
@@ -50,7 +48,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         if (baseURL != null) {
           FeedProvider provider = Provider.of(context, listen: false);
           provider.setupURL(baseURL, shouldSet: false);
-          await this.fetchTabs();
           await provider.login();
         }
         DatabaseProvider databaseProvider = Provider.of(context, listen: false);
@@ -59,10 +56,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  /// Fetch tabs and feeds
   Future<void> fetchTabs() async {
     FeedProvider provider = Provider.of(context, listen: false);
-    await provider.fetchFeeds();
     List<Publisher> publishers = await provider.fetchPublishers();
+    await provider.fetchFeeds();
     if (publishers != null) {
       setState(() {
         tabController = TabController(vsync: this, length: publishers.length);
@@ -83,18 +81,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     FeedProvider provider = Provider.of(context);
 
     switch (homeControlProvider.currentIndex) {
-      case 1:
-        return StarFeedList();
+      case 0:
+        return HeadlineList();
 
       case 2:
-        return NewsSourceList(
-          refresh: this.fetchTabs,
-        );
+        return StarFeedList();
 
-      case 3:
-        return UserPage();
-
-      default:
+      case 1:
         if (FeedProvider.baseURL == null) {
           return HelpCardList();
         }
@@ -129,6 +122,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Platform.isAndroid ||
             kIsWeb && constrains.maxWidth < kTabletWidth) {
           return Scaffold(
+            drawer: DrawerWidget(),
             key: provider.key,
             appBar: buildCustomAppBar(context),
             body: AnimatedSwitcher(
@@ -185,11 +179,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: provider.isLoading
               ? JumpingText("Loading")
               : Text(
-                  provider.publishers[provider.currentSelectionIndex].name,
+                  homeControlProvider.currentIndex == 0
+                      ? "Headlines"
+                      : provider
+                          .publishers[provider.currentSelectionIndex].name,
                   key: Key("title"),
                 ),
         ),
-        bottom: tabController != null && homeControlProvider.currentIndex == 0
+        bottom: tabController != null && homeControlProvider.currentIndex == 1
             ? TabBar(
                 indicator: BubbleTabIndicator(
                   indicatorHeight: 25,
@@ -221,6 +218,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       items: [
         BottomNavigationBarItem(
           title: Text(
+            "Headline",
+            key: Key("headline"),
+          ),
+          icon: Icon(Icons.view_headline),
+        ),
+        BottomNavigationBarItem(
+          title: Text(
             "News",
             key: Key("news"),
           ),
@@ -232,20 +236,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             key: Key("favorite"),
           ),
           icon: Icon(Icons.star),
-        ),
-        BottomNavigationBarItem(
-          title: Text(
-            "Settings",
-            key: Key("settings"),
-          ),
-          icon: Icon(Icons.settings),
-        ),
-        BottomNavigationBarItem(
-          title: Text(
-            "Account",
-            key: Key("account"),
-          ),
-          icon: Icon(Icons.people),
         ),
       ],
     );
@@ -321,37 +311,6 @@ class NewsSearch extends SearchDelegate<String> {
   Widget buildSuggestions(BuildContext context) {
     return Center(
       child: Text("Press Search"),
-    );
-  }
-
-  Widget _buildSuggestResults(List<Feed> feeds, context) {
-    if (feeds.length == 0) {
-      return Center(
-        child: Text("No result"),
-      );
-    }
-    FeedProvider feedProvider = Provider.of(context);
-
-    return ListView.builder(
-      itemCount: feeds.length,
-      itemBuilder: (context, index) {
-        Feed feed = feeds[index];
-        return ListTile(
-          onTap: () async {
-            Feed nFeed = await feedProvider.fetchFeed(feed.id);
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => DetailPage(
-                  feed: nFeed,
-                ),
-              ),
-            );
-          },
-          title: HighlightTextWidget(text: feed.title),
-          subtitle: Text("${feed.publisher.name} ${getTime(feed.postedTime)}"),
-          trailing: feed.cover != null ? Image.network(feed.cover) : null,
-        );
-      },
     );
   }
 

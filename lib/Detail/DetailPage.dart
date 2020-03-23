@@ -6,6 +6,7 @@ import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -107,16 +108,19 @@ class _DetailPageState extends State<DetailPage> {
         title: Text(widget.feed.title),
         actions: <Widget>[
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DetailWebview(
-                    feed: widget.feed,
-                  ),
-                ),
-              );
+            onPressed: () async {
+              if (await canLaunch(widget.feed.link)) {
+                await launch(widget.feed.link);
+              }
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(
+              //     builder: (_) => DetailWebview(
+              //       feed: widget.feed,
+              //     ),
+              //   ),
+              // );
             },
-            icon: Icon(Icons.open_in_browser),
+            icon: Icon(Icons.open_in_new),
           ),
           IconButton(
             key: Key("star_btn"),
@@ -163,20 +167,7 @@ class _DetailPageState extends State<DetailPage> {
               ? Markdown(
                   key: Key("news_body"),
                   onTapLink: (link) async {
-                    Feed feed = await provider.redirect(link);
-                    if (feed != null) {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (ctx) {
-                          return DetailPage(
-                            feed: feed,
-                          );
-                        }),
-                      );
-                    } else {
-                      if (await canLaunch(link)) {
-                        await launch(link);
-                      }
-                    }
+                    await redirect(link, context);
                   },
                   selectable: false,
                   styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(

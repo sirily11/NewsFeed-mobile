@@ -15,15 +15,18 @@ class FeedProvider with ChangeNotifier {
   String signupURL;
   String commentsURL;
   String shareURL;
+  String headlineURL;
 
   Dio client;
   bool isLoading = false;
   String nextLink;
   String nextCommentLink;
+  String nextHeadlineLink;
 
   int _currentSelection = 0;
   List<Feed> feeds = [];
   List<FeedComment> comments = [];
+  List<Headline> headlines = [];
 
   List<Publisher> publishers = [Publisher(name: "All", id: -1)];
   bool isError = false;
@@ -168,6 +171,7 @@ class FeedProvider with ChangeNotifier {
     signupURL = "$base/accounts/";
     commentsURL = "$base/comment/";
     shareURL = "$base/share/";
+    headlineURL = "$base/headline/";
     var prefs = await SharedPreferences.getInstance();
     if (shouldSet) {
       await prefs.setString("baseURL", base);
@@ -222,7 +226,7 @@ class FeedProvider with ChangeNotifier {
           .map((r) => r as Map<String, dynamic>)
           .toList();
 
-      nextLink = response.data['next'];
+      nextCommentLink = response.data['next'];
 
       comments = results.map((d) {
         FeedComment feed = FeedComment.fromJson(d);
@@ -316,6 +320,56 @@ class FeedProvider with ChangeNotifier {
       nextLink = response.data['next'];
       feeds = List.from(feeds)
         ..addAll(results.map((d) => Feed.fromJson(d)).toList());
+      isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  /// Fetch headline from server
+  Future<void> fetchHeadline() async {
+    try {
+      isLoading = true;
+      notifyListeners();
+      String url = headlineURL;
+
+      Response<Map<String, dynamic>> response = await client.get(url);
+      List results = response.data['results']
+          .map((r) => r as Map<String, dynamic>)
+          .toList();
+
+      nextHeadlineLink = response.data['next'];
+
+      /// get saved feeds
+      headlines = results.map((d) => Headline.fromJson(d)).toList();
+      isError = false;
+    } catch (e) {
+      print(e);
+      isError = true;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetch more headline
+  Future<void> fetchMoreHeadline() async {
+    try {
+      if (nextHeadlineLink == null) {
+        return;
+      }
+      isLoading = true;
+      notifyListeners();
+
+      Response<Map<String, dynamic>> response =
+          await client.get(nextHeadlineLink);
+      List results = response.data['results']
+          .map((r) => r as Map<String, dynamic>)
+          .toList();
+      nextHeadlineLink = response.data['next'];
+      headlines = List.from(headlines)
+        ..addAll(results.map((d) => Headline.fromJson(d)).toList());
       isLoading = false;
       notifyListeners();
     } catch (e) {

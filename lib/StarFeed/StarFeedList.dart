@@ -30,7 +30,7 @@ class StarFeedList extends StatelessWidget {
           return ListView.builder(
               itemCount: snapshot.data.length,
               itemBuilder: (context, index) {
-                var feed = snapshot.data[index];
+                var feed = snapshot.data[snapshot.data.length - 1 - index];
                 return GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(

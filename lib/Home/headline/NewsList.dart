@@ -4,9 +4,12 @@ import 'package:flutter_easyrefresh/material_header.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/Headline/headline.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
+import 'package:newsfeed_mobile/Home/headline/headlineList.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:provider/provider.dart';
 
 class NewsList extends StatelessWidget {
@@ -15,27 +18,27 @@ class NewsList extends StatelessWidget {
 
   const NewsList({@required this.refetch, @required this.feeds});
 
-  Widget _renderSmallScreen(BuildContext context) {
+  /// Render list of news feed
+  Widget _renderNewsList(BuildContext context) {
     FeedProvider provider = Provider.of(context);
-    return Scrollbar(
-      child: ListView.separated(
-        shrinkWrap: true,
-        separatorBuilder: (c, i) => Padding(
-          padding: const EdgeInsets.only(left: 40, right: 40),
-          child: Divider(
-            thickness: 2,
-          ),
+    return ListView.separated(
+      physics: NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      separatorBuilder: (c, i) => Padding(
+        padding: const EdgeInsets.only(left: 40, right: 40),
+        child: Divider(
+          thickness: 2,
         ),
-        // key: Key("news_list"),
-        controller: provider.scrollController,
-        itemCount: feeds.length,
-        itemBuilder: (context, index) {
-          Feed feed = feeds[index];
-          return FeedRow(
-            feed: feed,
-          );
-        },
       ),
+      // key: Key("news_list"),
+      controller: provider.scrollController,
+      itemCount: feeds.length,
+      itemBuilder: (context, index) {
+        Feed feed = feeds[index];
+        return FeedRow(
+          feed: feed,
+        );
+      },
     );
   }
 
@@ -43,6 +46,7 @@ class NewsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     FeedProvider provider = Provider.of(context);
+    HomeControlProvider homeControlProvider = Provider.of(context);
 
     if (provider.isError) {
       return Container(
@@ -66,14 +70,28 @@ class NewsList extends StatelessWidget {
     return EasyRefresh(
       header: ClassicalHeader(textColor: Colors.white),
       footer: ClassicalFooter(textColor: Colors.white),
+      firstRefresh: true,
       onLoad: () async {
         await provider.fetchMore();
       },
       onRefresh: () async {
-        await provider.fetchFeeds();
+        await refetch();
       },
       scrollController: provider.scrollController,
-      child: _renderSmallScreen(context),
+      child: ListView(
+        shrinkWrap: true,
+        children: <Widget>[
+          if (provider.currentSelectionIndex == 0) HomeHeadlineList(),
+          if (provider.currentSelectionIndex == 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                children: <Widget>[Icon(Icons.list)],
+              ),
+            ),
+          _renderNewsList(context)
+        ],
+      ),
     );
   }
 }

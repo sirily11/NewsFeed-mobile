@@ -5,6 +5,37 @@ class User {
   User({this.accessID, this.username});
 }
 
+class Headline {
+  String title;
+  String cover;
+  String content;
+  String shortDescription;
+  DateTime publishedTime;
+
+  Headline(
+      {this.title,
+      this.cover,
+      this.content,
+      this.publishedTime,
+      this.shortDescription});
+
+  factory Headline.fromJson(Map<String, dynamic> json) => Headline(
+        title: json["title"],
+        cover: json["cover"],
+        content: json["content"],
+        shortDescription: json['short_description'],
+        publishedTime: DateTime.parse(json["published_time"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "title": title,
+        "cover": cover,
+        "content": content,
+        "published_time": publishedTime.toIso8601String(),
+        "short_description": shortDescription
+      };
+}
+
 class FeedComment {
   int id;
   String comment;
@@ -85,23 +116,24 @@ class Feed {
       this.keywords,
       this.feedComments});
 
-  Feed.fromJson(Map<String, dynamic> json) {
+  Feed.fromJson(Map<String, dynamic> json, {bool removeContent = false}) {
     id = json['id'];
     title = json['title'];
     link = json['link'] ?? "";
     cover = json['cover'];
-    content = json['content'];
+    if (!removeContent) content = json['content'];
     sentiment = json['sentiment'];
     postedTime = DateTime.parse(json['posted_time']);
     publisher_id = json['publisher'];
     publisher = Publisher.fromJson(json['news_publisher']);
-    feedComments = json['feed_comments'] != null
-        ? List<FeedComment>.from(
-            json["feed_comments"].map(
-              (x) => FeedComment.fromJson(x),
-            ),
-          )
-        : null;
+    if (!removeContent)
+      feedComments = json['feed_comments'] != null
+          ? List<FeedComment>.from(
+              json["feed_comments"].map(
+                (x) => FeedComment.fromJson(x),
+              ),
+            )
+          : null;
 
     if (json["keywords"] != null) {
       keywords = List<String>.from(json["keywords"].map((x) => x));
@@ -129,18 +161,22 @@ class Feed {
 class Publisher {
   int id;
   String name;
+  Feed headline;
 
-  Publisher({this.id, this.name});
+  Publisher({this.id, this.name, this.headline});
 
   Publisher.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
+    headline =
+        json['headline'] != null ? Feed.fromJson(json['headline']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['id'] = this.id;
     data['name'] = this.name;
+    data['headline'] = this.headline;
     return data;
   }
 }

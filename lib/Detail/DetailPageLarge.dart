@@ -7,6 +7,7 @@ import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -82,20 +83,7 @@ class _DetailPageLargeScreenState extends State<DetailPageLargeScreen> {
       body: Markdown(
         key: Key("news_body"),
         onTapLink: (link) async {
-          Feed feed = await provider.redirect(link);
-          if (feed != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (ctx) {
-                return DetailPageLargeScreen(
-                  feed: feed,
-                );
-              }),
-            );
-          } else {
-            if (await canLaunch(link)) {
-              await launch(link);
-            }
-          }
+          await redirect(link, context);
         },
         selectable: false,
         styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(

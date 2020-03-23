@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:newsfeed_mobile/Home/parts/drawer.dart';
 import 'package:newsfeed_mobile/master-detail/master_detail_route.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -35,85 +36,91 @@ class _NewsSourceListState extends State<NewsSourceList> {
   @override
   Widget build(BuildContext context) {
     DatabaseProvider databaseProvider = Provider.of(context);
-    return FutureBuilder<List<FeedSourceData>>(
-      future: databaseProvider.getFeedSources(),
-      builder: (c, snapshot) {
-        if (!snapshot.hasData) {
-          return Center(child: CircularProgressIndicator());
-        }
-        List<FeedSourceData> sources = snapshot.data;
-        return ListView.separated(
-          itemBuilder: (c, index) {
-            if (index == 0) {
-              return FlatButton(
-                onPressed: () async {
-                  if (Platform.isMacOS) {
-                    await Navigator.of(context).push(
-                      DetailRoute(builder: (ctx) {
-                        return SettingsPage(
-                          refresh: widget.refresh,
-                        );
-                      }),
-                    );
-                  } else {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(builder: (ctx) {
-                        return SettingsPage(
-                          refresh: widget.refresh,
-                        );
-                      }),
-                    );
-                  }
-                },
-                child: Text("Add source"),
-              );
-            } else {
-              return Slidable(
-                actionPane: SlidableDrawerActionPane(),
-                actionExtentRatio: 0.25,
-                secondaryActions: <Widget>[
-                  IconSlideAction(
-                      caption: 'Delete',
-                      color: Colors.red,
-                      icon: Icons.delete,
-                      onTap: () async {
-                        FeedSourceData deleteSouce = sources.firstWhere(
-                          (element) => element.id == index,
-                        );
-                        await databaseProvider.deleteFeedSource(deleteSouce);
-                        setState(() {
-                          selectedID = -1;
-                        });
-                      }),
-                ],
-                child: Container(
-                  child: RadioListTile<int>(
-                    onChanged: (data) async {
-                      FeedSourceData selectedSource = sources.firstWhere(
-                        (element) => element.id == data,
-                        orElse: () => null,
+    return Scaffold(
+      drawer: DrawerWidget(),
+      appBar: AppBar(
+        title: Text("Settings"),
+      ),
+      body: FutureBuilder<List<FeedSourceData>>(
+        future: databaseProvider.getFeedSources(),
+        builder: (c, snapshot) {
+          if (!snapshot.hasData) {
+            return Center(child: CircularProgressIndicator());
+          }
+          List<FeedSourceData> sources = snapshot.data;
+          return ListView.separated(
+            itemBuilder: (c, index) {
+              if (index == 0) {
+                return FlatButton(
+                  onPressed: () async {
+                    if (Platform.isMacOS) {
+                      await Navigator.of(context).push(
+                        DetailRoute(builder: (ctx) {
+                          return SettingsPage(
+                            refresh: widget.refresh,
+                          );
+                        }),
                       );
-                      setState(() {
-                        selectedID = data;
-                      });
-                      FeedProvider provider =
-                          Provider.of(context, listen: false);
-                      provider.setupURL(selectedSource.link, key: data);
-                      await widget.refresh();
-                    },
-                    value: sources[index - 1].id,
-                    groupValue: selectedID,
-                    title: Text(sources[index - 1].name),
-                    subtitle: Text(sources[index - 1].link),
+                    } else {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(builder: (ctx) {
+                          return SettingsPage(
+                            refresh: widget.refresh,
+                          );
+                        }),
+                      );
+                    }
+                  },
+                  child: Text("Add source"),
+                );
+              } else {
+                return Slidable(
+                  actionPane: SlidableDrawerActionPane(),
+                  actionExtentRatio: 0.25,
+                  secondaryActions: <Widget>[
+                    IconSlideAction(
+                        caption: 'Delete',
+                        color: Colors.red,
+                        icon: Icons.delete,
+                        onTap: () async {
+                          FeedSourceData deleteSouce = sources.firstWhere(
+                            (element) => element.id == index,
+                          );
+                          await databaseProvider.deleteFeedSource(deleteSouce);
+                          setState(() {
+                            selectedID = -1;
+                          });
+                        }),
+                  ],
+                  child: Container(
+                    child: RadioListTile<int>(
+                      onChanged: (data) async {
+                        FeedSourceData selectedSource = sources.firstWhere(
+                          (element) => element.id == data,
+                          orElse: () => null,
+                        );
+                        setState(() {
+                          selectedID = data;
+                        });
+                        FeedProvider provider =
+                            Provider.of(context, listen: false);
+                        provider.setupURL(selectedSource.link, key: data);
+                        await widget.refresh();
+                      },
+                      value: sources[index - 1].id,
+                      groupValue: selectedID,
+                      title: Text(sources[index - 1].name),
+                      subtitle: Text(sources[index - 1].link),
+                    ),
                   ),
-                ),
-              );
-            }
-          },
-          separatorBuilder: (c, i) => Divider(),
-          itemCount: sources.length + 1,
-        );
-      },
+                );
+              }
+            },
+            separatorBuilder: (c, i) => Divider(),
+            itemCount: sources.length + 1,
+          );
+        },
+      ),
     );
   }
 }
