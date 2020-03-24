@@ -7,6 +7,8 @@ import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedProvider with ChangeNotifier {
+  bool _enableInfiniteScroll = false;
+
   static String baseURL;
   static String redirectURL;
   static String publisherURL =
@@ -19,6 +21,7 @@ class FeedProvider with ChangeNotifier {
 
   Dio client;
   bool isLoading = false;
+  String prevLink;
   String nextLink;
   String nextCommentLink;
   String nextHeadlineLink;
@@ -45,7 +48,24 @@ class FeedProvider with ChangeNotifier {
     if (base != null) {
       setupURL(base);
     }
+    initSetting();
   }
+
+  /// init settings
+  void initSetting() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _enableInfiniteScroll = prefs.getBool("infinite_scroll") ?? false;
+  }
+
+  set enableInfiniteScroll(bool val) {
+    _enableInfiniteScroll = val;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool("infinite_scroll", val);
+    });
+    notifyListeners();
+  }
+
+  bool get enableInfiniteScroll => _enableInfiniteScroll;
 
   Future sendComment(Feed feed, String comment) async {
     try {
@@ -161,8 +181,18 @@ class FeedProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// Test url if connectable
+  Future<void> test(String base) async {
+    var url = "$base/news/";
+    try {
+      await this.client.get(url);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
   /// Set up the url and store the data into shared preferences
-  void setupURL(String base, {int key, shouldSet = true}) async {
+  void setupURL(String base, {int key, bool shouldSet = true}) async {
     baseURL = "$base/news/";
     // Note: No back slash at the end
     redirectURL = "$base/redirect";
@@ -187,9 +217,9 @@ class FeedProvider with ChangeNotifier {
   }
 
   /// Back to the top of the list
-  void backToTop() {
+  Future<void> backToTop() async {
     if (scrollController.hasClients) {
-      scrollController.animateTo(0,
+      await scrollController.animateTo(0,
           duration: Duration(
             milliseconds: 300,
           ),
@@ -282,6 +312,7 @@ class FeedProvider with ChangeNotifier {
           .toList();
 
       nextLink = response.data['next'];
+      prevLink = null;
 
       /// get saved feeds
 
@@ -304,6 +335,33 @@ class FeedProvider with ChangeNotifier {
     }
   }
 
+  /// Fetch previous feeds base on the category
+  /// Try to fix scrolling issue
+  Future<void> fetchPrevious() async {
+    try {
+      if (nextLink == null) {
+        return;
+      }
+      isLoading = true;
+      notifyListeners();
+
+      Response<Map<String, dynamic>> response = await client.get(prevLink);
+      List results = response.data['results']
+          .map((r) => r as Map<String, dynamic>)
+          .toList();
+      nextLink = response.data['next'];
+      prevLink = response.data['previous'];
+
+      feeds = results.map((d) => Feed.fromJson(d)).toList();
+      scrollController.jumpTo(0);
+
+      isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   /// Fetch more feeds base on the category
   Future<void> fetchMore() async {
     try {
@@ -318,8 +376,19 @@ class FeedProvider with ChangeNotifier {
           .map((r) => r as Map<String, dynamic>)
           .toList();
       nextLink = response.data['next'];
-      feeds = List.from(feeds)
-        ..addAll(results.map((d) => Feed.fromJson(d)).toList());
+      prevLink = response.data['previous'];
+      if (_enableInfiniteScroll) {
+        // ==== original code
+        feeds = List.from(feeds)
+          ..addAll(results.map((d) => Feed.fromJson(d)).toList());
+        // ==== end
+      } else {
+        // ==== Fix scrolling issue
+        feeds = results.map((d) => Feed.fromJson(d)).toList();
+        scrollController.jumpTo(0);
+        // ==== end fix
+      }
+
       isLoading = false;
       notifyListeners();
     } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Home/HomePage.dart';
+import 'package:newsfeed_mobile/Settings/NewsSourceList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/account/UserPage.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
@@ -31,8 +32,9 @@ class MyApp extends StatelessWidget {
         initialRoute: "/",
         routes: {
           '/': (context) => HomePage(),
-          '/settings': (context) => NewsSourceList(),
-          '/users': (context) => UserPage()
+          '/settings': (context) => SettingsPage(),
+          '/users': (context) => UserPage(),
+          '/news-source': (context) => NewsSourceList()
         },
         title: 'Flutter Demo',
         darkTheme: ThemeData.dark(),

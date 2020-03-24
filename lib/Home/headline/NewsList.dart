@@ -68,21 +68,33 @@ class NewsList extends StatelessWidget {
     }
 
     return EasyRefresh(
-      header: ClassicalHeader(textColor: Colors.white),
+      header: ClassicalHeader(
+          textColor: Colors.white,
+          refreshReadyText: "Release to fetch",
+          refreshText: provider.prevLink != null
+              ? "Go Back To Previous"
+              : "Pull to refresh",
+          refreshingText: "Fetching feeds",
+          refreshedText: "Finished"),
       footer: ClassicalFooter(textColor: Colors.white),
       firstRefresh: true,
       onLoad: () async {
         await provider.fetchMore();
       },
       onRefresh: () async {
-        await refetch();
+        if (provider.prevLink == null) {
+          await refetch();
+        } else {
+          await provider.fetchPrevious();
+        }
       },
       scrollController: provider.scrollController,
       child: ListView(
         shrinkWrap: true,
         children: <Widget>[
-          if (provider.currentSelectionIndex == 0) HomeHeadlineList(),
-          if (provider.currentSelectionIndex == 0)
+          if (provider.currentSelectionIndex == 0 && provider.prevLink == null)
+            HomeHeadlineList(),
+          if (provider.currentSelectionIndex == 0 && provider.prevLink == null)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(

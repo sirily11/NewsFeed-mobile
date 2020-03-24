@@ -142,6 +142,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Scaffold(
                   key: provider.key,
                   appBar: buildCustomAppBar(context),
+                  drawer: DrawerWidget(),
                   body: AnimatedSwitcher(
                     child: _renderPage(context: context, provider: provider),
                     duration: Duration(milliseconds: 300),
@@ -167,6 +168,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       },
       appBar: AppBar(
         actions: <Widget>[
+          IconButton(
+            tooltip: "Refresh",
+            onPressed: () async {
+              await this.fetchTabs();
+            },
+            icon: Icon(Icons.refresh),
+          ),
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
