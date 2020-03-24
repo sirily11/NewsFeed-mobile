@@ -38,28 +38,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   TabController tabController;
 
-  @override
-  void initState() {
-    super.initState();
-    if (!widget.isError) {
-      SharedPreferences.getInstance().then((prefs) async {
-        String baseURL = prefs.getString("baseURL");
-
-        if (baseURL != null) {
-          FeedProvider provider = Provider.of(context, listen: false);
-          provider.setupURL(baseURL, shouldSet: false);
-          try {
-            await provider.login();
-          } catch (err) {
-            print("Init login error: ${err.toString()}");
-          }
-        }
-        DatabaseProvider databaseProvider = Provider.of(context, listen: false);
-        await databaseProvider.init();
-      });
-    }
-  }
-
   /// Fetch tabs and feeds
   Future<void> fetchTabs() async {
     FeedProvider provider = Provider.of(context, listen: false);
@@ -119,7 +97,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     FeedProvider provider = Provider.of(context);
-    HomeControlProvider homeControlProvider = Provider.of(context);
+    // Check whether url has been set
+    if (provider.headlineURL == null) {
+      return Container();
+    }
+
     return LayoutBuilder(
       builder: (context, constrains) {
         if (Platform.isIOS ||

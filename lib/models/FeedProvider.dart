@@ -11,8 +11,7 @@ class FeedProvider with ChangeNotifier {
 
   static String baseURL;
   static String redirectURL;
-  static String publisherURL =
-      "https://qbiv28lfa0.execute-api.us-east-1.amazonaws.com/dev/news-feed/publisher/";
+  static String publisherURL;
   String loginURL;
   String signupURL;
   String commentsURL;
@@ -47,8 +46,21 @@ class FeedProvider with ChangeNotifier {
     this.client = client ?? Dio();
     if (base != null) {
       setupURL(base);
+    } else {
+      initURL();
+      initSetting();
     }
-    initSetting();
+  }
+
+  void initURL() {
+    SharedPreferences.getInstance().then((prefs) async {
+      String baseURL = prefs.getString("baseURL");
+      if (baseURL != null) {
+        this.setupURL(baseURL, shouldSet: false);
+        notifyListeners();
+        await this.login();
+      }
+    });
   }
 
   /// init settings

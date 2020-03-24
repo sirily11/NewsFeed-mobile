@@ -6,6 +6,7 @@ import 'package:newsfeed_mobile/models/FeedProvider.dart';
 class MockClient extends Mock implements Dio {}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   group("Test Feed Provider", () {
     Dio client = MockClient();
     FeedProvider provider;
@@ -93,5 +94,5 @@ void main() {
       expect(provider.feeds[1].isStar, false);
       expect(provider.feeds[2].isStar, false);
     }, skip: true);
-  });
+  }, skip: true);
 }

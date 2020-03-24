@@ -17,6 +17,10 @@ class DatabaseProvider with ChangeNotifier {
 
   DatabaseFactory dbFactory = databaseFactoryIo;
 
+  DatabaseProvider() {
+    this.init();
+  }
+
   Future<void> init() async {
     /// init provider when it is not in web
     if (!kIsWeb) {

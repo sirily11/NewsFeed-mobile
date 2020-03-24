@@ -25,7 +25,11 @@ class MyApp extends StatelessWidget {
           create: (_) => HomeControlProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => DatabaseProvider(),
+          create: (_) {
+            var provider = DatabaseProvider();
+            provider.init();
+            return provider;
+          },
         )
       ],
       child: MaterialApp(

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Home/HomePage.dart';
-import 'package:newsfeed_mobile/Home/NewsList.dart';
+import 'package:newsfeed_mobile/Home/headline/NewsList.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -43,7 +43,12 @@ void main() {
           home: MultiProvider(
             providers: [
               ChangeNotifierProvider(
-                create: (_) => FeedProvider(),
+                create: (_) => FeedProvider(
+                  client: MockClient(),
+                ),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => HomeControlProvider(),
               )
             ],
             child: Material(
@@ -55,7 +60,8 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pumpAndSettle(Duration(seconds: 5));
       expect(find.text("News One"), findsOneWidget);
       expect(find.text("News Two"), findsOneWidget);
       expect(find.text("News Three"), findsOneWidget);
