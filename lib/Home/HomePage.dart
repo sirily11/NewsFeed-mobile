@@ -48,7 +48,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         if (baseURL != null) {
           FeedProvider provider = Provider.of(context, listen: false);
           provider.setupURL(baseURL, shouldSet: false);
-          await provider.login();
+          try {
+            await provider.login();
+          } catch (err) {
+            print("Init login error: ${err.toString()}");
+          }
         }
         DatabaseProvider databaseProvider = Provider.of(context, listen: false);
         await databaseProvider.init();

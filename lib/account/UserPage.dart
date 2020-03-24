@@ -150,7 +150,21 @@ class _UserPageState extends State<UserPage> {
                   child: JSONSchemaForm(
                     schema: loginSchema,
                     onSubmit: (data) async {
-                      await provider.login(data: data);
+                      try {
+                        await provider.login(data: data);
+                      } catch (err) {
+                        showDialog(
+                            context: context,
+                            builder: (c) => AlertDialog(
+                                  content: Text("${err.toString()}"),
+                                  actions: <Widget>[
+                                    FlatButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Text("ok"),
+                                    )
+                                  ],
+                                ));
+                      }
                     },
                   ),
                 ),

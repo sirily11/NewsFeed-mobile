@@ -113,21 +113,23 @@ class FeedProvider with ChangeNotifier {
       String username = prefs.getString("username");
       String password = prefs.getString('password');
 
-      if (username == null && password == null) {
-        if (data != null) {
-          var res = await this.client.post(loginURL, data: data);
-          user = User(accessID: res.data['access']);
-          await prefs.setString("username", data['username']);
-          await prefs.setString("password", data['password']);
-        }
-      } else {
-        var res = await this.client.post(loginURL, data: {
-          "username": username,
-          "password": password,
-        });
+      if (data != null) {
+        var res = await this.client.post(loginURL, data: data);
         user = User(accessID: res.data['access']);
+        await prefs.setString("username", data['username']);
+        await prefs.setString("password", data['password']);
+      } else {
+        if (username != null && password != null) {
+          var res = await this.client.post(loginURL, data: {
+            "username": username,
+            "password": password,
+          });
+          user = User(accessID: res.data['access']);
+        }
       }
-    } catch (err) {} finally {
+    } catch (err) {
+      rethrow;
+    } finally {
       isLoading = false;
       notifyListeners();
     }
