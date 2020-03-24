@@ -90,6 +90,7 @@ class NewsList extends StatelessWidget {
       },
       scrollController: provider.scrollController,
       child: ListView(
+        key: Key("news-list"),
         shrinkWrap: true,
         children: <Widget>[
           if (provider.currentSelectionIndex == 0 && provider.prevLink == null)

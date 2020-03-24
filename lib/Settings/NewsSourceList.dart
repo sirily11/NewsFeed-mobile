@@ -11,9 +11,10 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NewsSourceList extends StatefulWidget {
-  final Function refresh;
-
-  NewsSourceList({this.refresh});
+  /// only for test
+  final DatabaseProvider databaseProvider;
+  final FeedProvider feedProvider;
+  NewsSourceList({this.databaseProvider, this.feedProvider});
 
   @override
   _NewsSourceListState createState() => _NewsSourceListState();
@@ -26,9 +27,9 @@ class _NewsSourceListState extends State<NewsSourceList> {
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((value) async {
-      int id = value.getInt("selectedFeedsourceKey");
-      DatabaseProvider databaseProvider = Provider.of(context, listen: false);
+    DatabaseProvider databaseProvider =
+        widget.databaseProvider ?? Provider.of(context, listen: false);
+    databaseProvider.getSelectedFeedSourceId().then((id) async {
       var sources = await databaseProvider.getFeedSources();
       var selectedFeedSource = sources.firstWhere(
         (element) => element.id == id,
@@ -43,7 +44,10 @@ class _NewsSourceListState extends State<NewsSourceList> {
 
   @override
   Widget build(BuildContext context) {
-    DatabaseProvider databaseProvider = Provider.of(context);
+    DatabaseProvider databaseProvider =
+        widget.databaseProvider ?? Provider.of(context);
+    FeedProvider provider =
+        widget.feedProvider ?? Provider.of(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text("Settings"),
@@ -93,7 +97,6 @@ class _NewsSourceListState extends State<NewsSourceList> {
                         if (deleteSouce.id == selectedSource?.id) {
                           selectedSource = null;
                         }
-
                         feedSource.remove(deleteSouce);
                       });
                     }),
@@ -104,8 +107,8 @@ class _NewsSourceListState extends State<NewsSourceList> {
                     setState(() {
                       selectedSource = data;
                     });
-                    FeedProvider provider = Provider.of(context, listen: false);
-                    provider.setupURL(selectedSource.link, key: data.id);
+
+                    await provider.setupURL(selectedSource.link, key: data.id);
                   },
                   value: feedSource[index - 1],
                   groupValue: selectedSource,
@@ -124,7 +127,9 @@ class _NewsSourceListState extends State<NewsSourceList> {
 }
 
 class SourceSettingsPage extends StatefulWidget {
-  SourceSettingsPage();
+  final FeedProvider feedProvider;
+  final DatabaseProvider databaseProvider;
+  SourceSettingsPage({this.feedProvider, this.databaseProvider});
 
   @override
   _SourceSettingsPageState createState() => _SourceSettingsPageState();
@@ -153,8 +158,10 @@ class _SourceSettingsPageState extends State<SourceSettingsPage> {
         isLoading = true;
       });
       try {
-        FeedProvider provider = Provider.of(context, listen: false);
-        DatabaseProvider databaseProvider = Provider.of(context, listen: false);
+        FeedProvider provider =
+            widget.feedProvider ?? Provider.of(context, listen: false);
+        DatabaseProvider databaseProvider =
+            widget.databaseProvider ?? Provider.of(context, listen: false);
         await provider.test(url);
         provider.setupURL(url);
         await databaseProvider.addFeedSource(

@@ -9,9 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FeedProvider with ChangeNotifier {
   bool _enableInfiniteScroll = false;
 
-  static String baseURL;
-  static String redirectURL;
-  static String publisherURL;
+  String baseURL;
+  String redirectURL;
+  String publisherURL;
   String loginURL;
   String signupURL;
   String commentsURL;
@@ -19,6 +19,8 @@ class FeedProvider with ChangeNotifier {
   String headlineURL;
 
   Dio client;
+  SharedPreferences preferences;
+
   bool isLoading = false;
   String prevLink;
   String nextLink;
@@ -41,39 +43,45 @@ class FeedProvider with ChangeNotifier {
 
   User user;
 
-  FeedProvider({Dio client, String base}) {
+  /// Feed provider constrctor
+  /// [client] is a testing client
+  /// [base] is a testing base url
+  FeedProvider({Dio client, SharedPreferences preferences}) {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
-    if (base != null) {
-      setupURL(base);
-    } else {
-      initURL();
-      initSetting();
-    }
+    this.preferences = preferences ?? null;
+    initURL();
+    initSetting();
   }
 
-  void initURL() {
-    SharedPreferences.getInstance().then((prefs) async {
-      String baseURL = prefs.getString("baseURL");
-      if (baseURL != null) {
-        this.setupURL(baseURL, shouldSet: false);
-        notifyListeners();
-        await this.login();
-      }
-    });
+  void initURL() async {
+    SharedPreferences prefs =
+        this.preferences ?? await SharedPreferences.getInstance();
+    String baseURL = prefs.getString("baseURL");
+    if (baseURL != null) {
+      this.setupURL(baseURL, shouldSet: false);
+      notifyListeners();
+      await this.login();
+    }
   }
 
   /// init settings
   void initSetting() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs =
+        this.preferences ?? await SharedPreferences.getInstance();
     _enableInfiniteScroll = prefs.getBool("infinite_scroll") ?? false;
   }
 
   set enableInfiniteScroll(bool val) {
     _enableInfiniteScroll = val;
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setBool("infinite_scroll", val);
-    });
+    if (this.preferences != null) {
+      this.preferences.setBool("infinite_scroll", val);
+    } else {
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setBool("infinite_scroll", val);
+      });
+    }
+
     notifyListeners();
   }
 
@@ -121,7 +129,7 @@ class FeedProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      var prefs = await SharedPreferences.getInstance();
+      var prefs = this.preferences ?? await SharedPreferences.getInstance();
       String username = prefs.getString("username");
       String password = prefs.getString('password');
 
@@ -187,7 +195,7 @@ class FeedProvider with ChangeNotifier {
   }
 
   Future logout() async {
-    var prefs = await SharedPreferences.getInstance();
+    var prefs = this.preferences ?? await SharedPreferences.getInstance();
     await prefs.remove("username");
     await prefs.remove("password");
     user = null;
@@ -206,7 +214,7 @@ class FeedProvider with ChangeNotifier {
   }
 
   /// Set up the url and store the data into shared preferences
-  void setupURL(String base, {int key, bool shouldSet = true}) async {
+  Future<void> setupURL(String base, {int key, bool shouldSet = true}) async {
     baseURL = "$base/news/";
     // Note: No back slash at the end
     redirectURL = "$base/redirect";
@@ -216,12 +224,13 @@ class FeedProvider with ChangeNotifier {
     commentsURL = "$base/comment/";
     shareURL = "$base/share/";
     headlineURL = "$base/headline/";
-    var prefs = await SharedPreferences.getInstance();
+
     if (shouldSet) {
+      var prefs = this.preferences ?? await SharedPreferences.getInstance();
       await prefs.setString("baseURL", base);
-    }
-    if (key != null) {
-      await prefs.setInt("selectedFeedsourceKey", key);
+      if (key != null) {
+        await prefs.setInt("selectedFeedsourceKey", key);
+      }
     }
   }
 

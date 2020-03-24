@@ -8,17 +8,21 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';
 import 'package:path/path.dart' as p;
+import 'package:share/share.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseProvider with ChangeNotifier {
   final String newsfeedDBPath = "feedDB";
   final String feedSourceDBPath = "feedSourceDB";
   Database newsFeedDB;
   Database feedSourceDB;
+  SharedPreferences preferences;
 
   DatabaseFactory dbFactory = databaseFactoryIo;
 
-  DatabaseProvider() {
+  DatabaseProvider({SharedPreferences preferences}) {
     this.init();
+    this.preferences = preferences;
   }
 
   Future<void> init() async {
@@ -36,6 +40,13 @@ class DatabaseProvider with ChangeNotifier {
         this.newsFeedDB = await dbFactory.openDatabase(feedSourceDBPath);
       }
     }
+  }
+
+  Future<int> getSelectedFeedSourceId() async {
+    SharedPreferences preferences =
+        this.preferences ?? await SharedPreferences.getInstance();
+    int id = preferences.getInt("selectedFeedsourceKey");
+    return id;
   }
 
   /// Get feed sources

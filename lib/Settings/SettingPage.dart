@@ -22,6 +22,7 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           SwitchListTile(
+            key: Key("enable_infiniteScroll"),
             onChanged: (v) {
               provider.enableInfiniteScroll = v;
             },

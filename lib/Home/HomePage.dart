@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return StarFeedList();
 
       case 1:
-        if (FeedProvider.baseURL == null) {
+        if (provider.baseURL == null) {
           return HelpCardList();
         }
 
