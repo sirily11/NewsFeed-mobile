@@ -25,17 +25,16 @@ class MyApp extends StatelessWidget {
           create: (_) => HomeControlProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) {
-            var provider = DatabaseProvider();
-            provider.init();
-            return provider;
-          },
+          create: (_) => DatabaseProvider(),
         )
       ],
       child: MaterialApp(
         initialRoute: "/",
         routes: {
-          '/': (context) => HomePage(),
+          '/': (context) {
+            DatabaseProvider provider = Provider.of(context);
+            return HomePage();
+          },
           '/settings': (context) => SettingsPage(),
           '/users': (context) => UserPage(),
           '/news-source': (context) => NewsSourceList()

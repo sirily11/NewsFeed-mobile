@@ -21,7 +21,8 @@ class DatabaseProvider with ChangeNotifier {
   DatabaseFactory dbFactory = databaseFactoryIo;
 
   DatabaseProvider({SharedPreferences preferences}) {
-    this.init();
+    print("Start init database");
+    this.init().then((value) => print("Database init"));
     this.preferences = preferences;
   }
 
