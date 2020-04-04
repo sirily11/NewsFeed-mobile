@@ -119,6 +119,7 @@ class _UserPageState extends State<UserPage> {
                 }
               },
               title: Text("View All My Comments"),
+              trailing: Icon(Icons.more_horiz),
             ),
             Divider(),
             FlatButton(

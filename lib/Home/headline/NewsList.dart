@@ -46,7 +46,10 @@ class NewsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     FeedProvider provider = Provider.of(context);
-    HomeControlProvider homeControlProvider = Provider.of(context);
+
+    bool showHeadline = provider.enableInfiniteScroll
+        ? provider.currentSelectionIndex == 0
+        : provider.prevLink == null && provider.currentSelectionIndex == 0;
 
     if (provider.isError) {
       return Container(
@@ -69,14 +72,16 @@ class NewsList extends StatelessWidget {
 
     return EasyRefresh(
       header: ClassicalHeader(
-          textColor: Colors.white,
+          textColor: Theme.of(context).textTheme.bodyText1.color,
           refreshReadyText: "Release to fetch",
           refreshText: provider.prevLink != null
               ? "Go Back To Previous"
               : "Pull to refresh",
           refreshingText: "Fetching feeds",
           refreshedText: "Finished"),
-      footer: ClassicalFooter(textColor: Colors.white),
+      footer: ClassicalFooter(
+        textColor: Theme.of(context).textTheme.bodyText1.color,
+      ),
       firstRefresh: true,
       onLoad: () async {
         await provider.fetchMore();
@@ -93,9 +98,8 @@ class NewsList extends StatelessWidget {
         key: Key("news-list"),
         shrinkWrap: true,
         children: <Widget>[
-          if (provider.currentSelectionIndex == 0 && provider.prevLink == null)
-            HomeHeadlineList(),
-          if (provider.currentSelectionIndex == 0 && provider.prevLink == null)
+          if (showHeadline) HomeHeadlineList(),
+          if (showHeadline)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Home/HomePage.dart';
+import 'package:newsfeed_mobile/Settings/ColorSettingsPage.dart';
+import 'package:newsfeed_mobile/Settings/FontSettingsPage.dart';
 import 'package:newsfeed_mobile/Settings/NewsSourceList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/account/UserPage.dart';
@@ -28,21 +30,44 @@ class MyApp extends StatelessWidget {
           create: (_) => DatabaseProvider(),
         )
       ],
-      child: MaterialApp(
-        initialRoute: "/",
-        routes: {
-          '/': (context) {
-            DatabaseProvider provider = Provider.of(context);
-            return HomePage();
-          },
-          '/settings': (context) => SettingsPage(),
-          '/users': (context) => UserPage(),
-          '/news-source': (context) => NewsSourceList()
+      child: Builder(
+        builder: (context) {
+          var provider = Provider.of<HomeControlProvider>(context);
+          return MaterialApp(
+            initialRoute: "/",
+            routes: {
+              '/': (context) {
+                DatabaseProvider provider = Provider.of(context);
+                return HomePage();
+              },
+              '/settings': (context) => SettingsPage(),
+              '/users': (context) => UserPage(),
+              '/news-source': (context) => NewsSourceList(),
+              '/color-settings': (context) => ColorSettingsPage(),
+              '/font-settings': (context) => FontSettingsPage()
+            },
+            title: 'Flutter Demo',
+            darkTheme: ThemeData.dark().copyWith(
+              primaryColor:
+                  provider.primaryColor ?? ThemeData.dark().primaryColor,
+              buttonColor: provider.tagColor ?? ThemeData.dark().buttonColor,
+              textTheme: ThemeData.dark().textTheme.apply(
+                    fontFamily:
+                        provider.fontSelections?.font?.bodyText1?.fontFamily,
+                  ),
+            ),
+            theme: ThemeData(
+              primaryColor: provider.primaryColor ?? ThemeData().primaryColor,
+              buttonColor: provider.tagColor ?? ThemeData().primaryColor,
+              textTheme: ThemeData().textTheme.apply(
+                    fontFamily:
+                        provider.fontSelections?.font?.bodyText1?.fontFamily,
+                  ),
+            ),
+            themeMode:
+                provider.enableDarkmode ? ThemeMode.dark : ThemeMode.light,
+          );
         },
-        title: 'Flutter Demo',
-        darkTheme: ThemeData.dark(),
-        theme:
-            ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
       ),
     );
   }

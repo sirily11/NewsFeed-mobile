@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
+import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -26,28 +27,29 @@ class FeedRow extends StatelessWidget {
   }
 
   Widget _renderText(context) {
-    FeedProvider provider = Provider.of(context);
-
+    HomeControlProvider homeControlProvider =
+        Provider.of(context, listen: false);
+    bool useImageStyle =
+        homeControlProvider.enableImage ? feed.cover != null : false;
     return Container(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
             child: Column(
-          crossAxisAlignment: feed.cover != null
+          crossAxisAlignment: useImageStyle
               ? CrossAxisAlignment.center
               : CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
               feed.title,
-              textAlign:
-                  feed.cover != null ? TextAlign.center : TextAlign.start,
-              style: feed.cover != null
+              textAlign: useImageStyle ? TextAlign.center : TextAlign.start,
+              style: useImageStyle
                   ? Theme.of(context).textTheme.title
                   : Theme.of(context).textTheme.subtitle,
             ),
             Column(
-              crossAxisAlignment: feed.cover != null
+              crossAxisAlignment: useImageStyle
                   ? CrossAxisAlignment.center
                   : CrossAxisAlignment.start,
               children: <Widget>[
@@ -71,7 +73,11 @@ class FeedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> body = [_renderImage(context), _renderText(context)];
+    HomeControlProvider homeControlProvider = Provider.of(context);
+    List<Widget> body = [
+      if (homeControlProvider.enableImage) _renderImage(context),
+      _renderText(context)
+    ];
 
     return GestureDetector(
       onTap: () {
@@ -117,6 +123,7 @@ class TagsWidget extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 4),
                 child: TagWidget(
                   text: t,
+                  color: Theme.of(context).buttonColor,
                 ),
               ),
             )
@@ -141,7 +148,7 @@ class TagWidget extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         child: Text(
           "$text",
-          style: Theme.of(context).textTheme.subtitle,
+          style: Theme.of(context).primaryTextTheme.bodyText2,
         ),
       ),
     );

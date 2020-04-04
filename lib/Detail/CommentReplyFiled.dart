@@ -20,7 +20,6 @@ class _CommentReplyFieldState extends State<CommentReplyField> {
     FeedProvider provider = Provider.of(context);
     return Container(
       width: MediaQuery.of(context).size.width,
-      height: 100,
       child: Padding(
         padding: const EdgeInsets.all(19.0),
         child: Row(

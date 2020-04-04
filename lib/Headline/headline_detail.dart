@@ -14,12 +14,15 @@ class HeadlineDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${headline.title}"),
+        title: Text(
+          "${headline.title}",
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       body: Theme(
         data: ThemeData.dark().copyWith(
           textTheme: TextTheme().copyWith(
-            bodyText1: TextStyle(fontSize: 20),
+            bodyText1: TextStyle(fontSize: 16),
           ),
         ),
         child: JsonScreen(

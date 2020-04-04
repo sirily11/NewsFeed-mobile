@@ -198,7 +198,7 @@ class _DetailPageState extends State<DetailPage> {
               child: Stack(
                 children: <Widget>[
                   FloatingActionButton(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: theme.primaryColor,
                     onPressed: () async {
                       Navigator.push(
                         context,

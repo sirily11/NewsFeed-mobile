@@ -22,8 +22,10 @@ class _HeadlineListState extends State<HeadlineList> {
 
     return EasyRefresh(
       firstRefresh: true,
-      header: ClassicalHeader(textColor: Colors.white),
-      footer: ClassicalFooter(textColor: Colors.white),
+      header: ClassicalHeader(
+          textColor: Theme.of(context).textTheme.bodyText2.color),
+      footer: ClassicalFooter(
+          textColor: Theme.of(context).textTheme.bodyText2.color),
       onRefresh: () async {
         await provider.fetchHeadline();
       },
@@ -43,7 +45,7 @@ class _HeadlineListState extends State<HeadlineList> {
               ),
             ],
           ),
-          buildListHeadline(endIndex)
+          buildListHeadline(1)
         ],
       ),
     );
@@ -51,13 +53,15 @@ class _HeadlineListState extends State<HeadlineList> {
 
   ListView buildListHeadline(int endIndex) {
     FeedProvider provider = Provider.of(context);
-    var length = provider.headlines.length - endIndex;
+    // var length = provider.headlines.length - endIndex;
+    var length = provider.headlines.length;
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       itemCount: max(length, 0),
       itemBuilder: (c, i) {
-        Headline headline = provider.headlines[i + endIndex - 1];
+        // Headline headline = provider.headlines[i + endIndex - 1];
+        Headline headline = provider.headlines[i];
         return InkWell(
           onTap: () {
             Navigator.push(
@@ -101,12 +105,17 @@ class _HeadlineListState extends State<HeadlineList> {
                         Text(
                           headline.title,
                           style: Theme.of(context).textTheme.headline6,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           getTime(headline.publishedTime),
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Text(headline.shortDescription)
+                        Text(
+                          headline.shortDescription,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        )
                       ],
                     ),
                   ),
@@ -161,6 +170,7 @@ class _HeadlineListState extends State<HeadlineList> {
                   ),
                   Text(
                     headline.title,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 20),
                   ),
                   Text(
