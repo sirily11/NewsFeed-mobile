@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:newsfeed_mobile/Home/FeedRow.dart';
 import 'package:newsfeed_mobile/Home/HomePage.dart';
 import 'package:newsfeed_mobile/Settings/ColorSettingsPage.dart';
 import 'package:newsfeed_mobile/Settings/FontSettingsPage.dart';
@@ -7,10 +9,14 @@ import 'package:newsfeed_mobile/Settings/NewsSourceList.dart';
 import 'package:newsfeed_mobile/Settings/SettingPage.dart';
 import 'package:newsfeed_mobile/account/UserPage.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
+import 'package:newsfeed_mobile/models/Feed.dart';
+
 // import 'package:newsfeed_mobile/models/DatabaseProviderWeb.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:provider/provider.dart';
+
+import 'Home/headline/headlineList.dart';
 
 void main() => runApp(MyApp());
 
@@ -68,6 +74,49 @@ class MyApp extends StatelessWidget {
                 provider.enableDarkmode ? ThemeMode.dark : ThemeMode.light,
           );
         },
+      ),
+    );
+  }
+}
+
+class TestView extends StatefulWidget {
+  @override
+  _TestViewState createState() => _TestViewState();
+}
+
+class _TestViewState extends State<TestView> {
+  final Publisher publisher = Publisher(id: 1, name: "a");
+
+  @override
+  Widget build(BuildContext context) {
+    FeedProvider feedProvider = Provider.of(context);
+    print(feedProvider.feeds.length);
+    return Scaffold(
+      appBar: AppBar(),
+      body: EasyRefresh(
+        firstRefresh: true,
+        onRefresh: ()async{
+          await feedProvider.fetchPublishers();
+          await feedProvider.fetchFeeds();
+        },
+        onLoad: () async {
+          await feedProvider.fetchMore();
+
+        },
+        child: ListView(
+          shrinkWrap: true,
+          children: <Widget>[
+            HomeHeadlineList(),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: feedProvider.feeds.length,
+              itemBuilder: (c, i) => FeedRow(
+                feed: feedProvider.feeds[i],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

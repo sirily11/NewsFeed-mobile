@@ -21,20 +21,43 @@ class NewsList extends StatelessWidget {
   /// Render list of news feed
   Widget _renderNewsList(BuildContext context) {
     FeedProvider provider = Provider.of(context);
+    bool showHeadline = provider.enableInfiniteScroll
+        ? provider.currentSelectionIndex == 0
+        : provider.prevLink == null && provider.currentSelectionIndex == 0;
+
     return ListView.separated(
-      physics: NeverScrollableScrollPhysics(),
+      cacheExtent: 10000,
       shrinkWrap: true,
-      separatorBuilder: (c, i) => Padding(
-        padding: const EdgeInsets.only(left: 40, right: 40),
-        child: Divider(
-          thickness: 2,
-        ),
-      ),
-      // key: Key("news_list"),
+      separatorBuilder: (c, i) => showHeadline
+          ? i > 1
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 40, right: 40),
+                  child: Divider(
+                    thickness: 2,
+                  ),
+                )
+              : Container()
+          : Padding(
+              padding: const EdgeInsets.only(left: 40, right: 40),
+              child: Divider(
+                thickness: 2,
+              ),
+            ),
+      key: Key("news_list"),
       controller: provider.scrollController,
-      itemCount: feeds.length,
+      itemCount: showHeadline ? feeds.length + 2 : feeds.length,
       itemBuilder: (context, index) {
-        Feed feed = feeds[index];
+        if (index == 0) {
+          return HomeHeadlineList();
+        }
+
+        if (index == 1) {
+          return SizedBox(
+            height: 20,
+          );
+        }
+
+        Feed feed = feeds[index - 2];
         return FeedRow(
           feed: feed,
         );
@@ -46,10 +69,6 @@ class NewsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     FeedProvider provider = Provider.of(context);
-
-    bool showHeadline = provider.enableInfiniteScroll
-        ? provider.currentSelectionIndex == 0
-        : provider.prevLink == null && provider.currentSelectionIndex == 0;
 
     if (provider.isError) {
       return Container(
@@ -93,22 +112,7 @@ class NewsList extends StatelessWidget {
           await provider.fetchPrevious();
         }
       },
-      scrollController: provider.scrollController,
-      child: ListView(
-        key: Key("news-list"),
-        shrinkWrap: true,
-        children: <Widget>[
-          if (showHeadline) HomeHeadlineList(),
-          if (showHeadline)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                children: <Widget>[Icon(Icons.list)],
-              ),
-            ),
-          _renderNewsList(context)
-        ],
-      ),
+      child: _renderNewsList(context),
     );
   }
 }

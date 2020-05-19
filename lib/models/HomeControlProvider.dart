@@ -52,8 +52,12 @@ class HomeControlProvider with ChangeNotifier {
       String selectionFontStr = prefs.getString("font");
       _enableDarkmode = prefs.getBool("enable_darkmode") ?? true;
       _enableImage = prefs.getBool("enable_image") ?? true;
-      _primaryColor = Color(prefs.getInt("primary_color")).withAlpha(255);
-      _tagColor = Color(prefs.getInt("tag_color")).withAlpha(255);
+      if (prefs.getInt("primary_color") != null) {
+        _primaryColor = Color(prefs.getInt("primary_color")).withAlpha(255);
+      }
+      if (prefs.getInt("tag_color") != null) {
+        _tagColor = Color(prefs.getInt("tag_color")).withAlpha(255);
+      }
       _fontSelections = avaliableFonts
           .firstWhere((e) => e.name == selectionFontStr, orElse: () => null);
       notifyListeners();

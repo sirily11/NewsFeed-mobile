@@ -97,10 +97,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     FeedProvider provider = Provider.of(context);
-    // Check whether url has been set
-    if (provider.headlineURL == null) {
-      return Container();
-    }
 
     return LayoutBuilder(
       builder: (context, constrains) {
@@ -109,6 +105,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             kIsWeb && constrains.maxWidth < kTabletWidth) {
           return Scaffold(
             drawer: DrawerWidget(),
+            floatingActionButton: FloatingActionButton(child: Icon(Icons.file_upload), onPressed: (){
+              provider.backToTop();
+            },),
             key: provider.key,
             appBar: buildCustomAppBar(context),
             body: AnimatedSwitcher(
