@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
+import 'package:newsfeed_mobile/Home/FeedClipper.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
@@ -12,61 +14,34 @@ class FeedRow extends StatelessWidget {
 
   FeedRow({@required this.feed});
 
-  Widget _renderImage(context) {
-    if (feed.cover != null) {
-      return FadeInImage.memoryNetwork(
-        placeholder: kTransparentImage,
-        image: feed.cover,
-        width: MediaQuery.of(context).size.width,
-        height: 300,
-        fit: BoxFit.cover,
+  Widget _buildImage(bool useImage, BuildContext context) {
+    HomeControlProvider homeControlProvider = Provider.of(context);
+    if (useImage) {
+      return ClipPath(
+        clipper: ImageClipper(),
+        child: FadeInImage(
+          placeholder: MemoryImage(kTransparentImage),
+          image: NetworkImage(
+            feed.cover,
+          ),
+          height: 200,
+          width: MediaQuery.of(context).size.width,
+          fit: BoxFit.cover,
+        ),
       );
-    } else {
-      return Container();
     }
-  }
 
-  Widget _renderText(context) {
-    HomeControlProvider homeControlProvider =
-        Provider.of(context, listen: false);
-    bool useImageStyle =
-        homeControlProvider.enableImage ? feed.cover != null : false;
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-            child: Column(
-          crossAxisAlignment: useImageStyle
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              feed.title,
-              textAlign: useImageStyle ? TextAlign.center : TextAlign.start,
-              style: useImageStyle
-                  ? Theme.of(context).textTheme.title
-                  : Theme.of(context).textTheme.subtitle,
-            ),
-            Column(
-              crossAxisAlignment: useImageStyle
-                  ? CrossAxisAlignment.center
-                  : CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(feed.publisher.name),
-                Text(
-                  "${getTime(feed.postedTime)}",
-                  style: Theme.of(context).textTheme.subtitle,
-                ),
-                feed.keywords.length > 0
-                    ? TagsWidget(
-                        tags: feed.keywords,
-                      )
-                    : Container()
-              ],
-            ),
-          ],
-        )),
+    return ClipPath(
+      clipper: ImageClipper(),
+      child: Container(
+        height: 200,
+        color: Theme.of(context).primaryColor,
+        child: Center(
+          child: Text(
+            feed.publisher.name,
+            style: Theme.of(context).textTheme.headline5,
+          ),
+        ),
       ),
     );
   }
@@ -74,31 +49,72 @@ class FeedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     HomeControlProvider homeControlProvider = Provider.of(context);
-    List<Widget> body = [
-      if (homeControlProvider.enableImage) _renderImage(context),
-      _renderText(context)
-    ];
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) {
-              return DetailPage(
-                feed: feed,
-              );
-            },
-          ),
-        );
-      },
-      child: Container(
-        width: MediaQuery.of(context).size.width,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+    bool useImage =
+        homeControlProvider.enableImage ? feed.cover != null : false;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Card(
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(13),
+        ),
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => DetailPage(
+                  feed: feed,
+                ),
+              ),
+            );
+          },
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: body,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _buildImage(useImage, context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  feed.title,
+                  style: Theme.of(context).textTheme.headline6.copyWith(
+                        fontSize: 18,
+                      ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Text(
+                  feed.description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (useImage)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 45),
+                  child: Text(
+                    feed.publisher.name,
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle2
+                        .copyWith(fontSize: 15),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.only(left: 45, bottom: 20),
+                child: Text(
+                  getTime(feed.postedTime),
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle2
+                      .copyWith(fontSize: 15),
+                ),
+              )
+            ],
           ),
         ),
       ),

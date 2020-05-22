@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Detail/DetailCommentPage.dart';
 import 'package:newsfeed_mobile/Detail/DetailWebview.dart';
+import 'package:newsfeed_mobile/Home/FeedClipper.dart';
 import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -23,10 +25,18 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
+  final double appBarHeight = 350;
+  final Color appbarColor = Color.fromRGBO(43, 29, 97, 1);
+
   bool isStar = false;
   double baseFrontSize = 20;
   bool isOpen = false;
   bool willOpenLink = true;
+
+  ScrollController controller = ScrollController();
+
+  bool showAppbar = false;
+  double extendedSize = 0;
 
   @override
   void initState() {
@@ -41,6 +51,24 @@ class _DetailPageState extends State<DetailPage> {
         }
       });
     }
+    controller.addListener(() {
+      if (controller.offset < 0) {
+        print("leff");
+      }
+      if (controller.offset > appBarHeight - 70) {
+        if (!showAppbar) {
+          setState(() {
+            showAppbar = true;
+          });
+        }
+      } else {
+        if (showAppbar) {
+          setState(() {
+            showAppbar = false;
+          });
+        }
+      }
+    });
   }
 
   Widget _panel() {
@@ -102,49 +130,30 @@ class _DetailPageState extends State<DetailPage> {
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     FeedProvider provider = Provider.of<FeedProvider>(context);
+    String content = widget.feed.content.replaceAll("[](javascript:;)", "");
+    var markdownStyleSheet = MarkdownStyleSheet.fromTheme(theme.copyWith(
+      textTheme: theme.textTheme.copyWith(
+        bodyText1:
+            theme.textTheme.bodyText1.copyWith(fontSize: baseFrontSize + 10),
+        // display1: theme.textTheme.headline
+        //     .copyWith(fontSize: baseFrontSize + 10),
+        bodyText2: theme.textTheme.bodyText2.copyWith(fontSize: baseFrontSize),
+      ),
+    ));
+    var openWebButton = IconButton(
+      onPressed: openWeb,
+      icon: Icon(Icons.open_in_new),
+    );
+    var starButton = IconButton(
+      key: Key("star_btn"),
+      color: isStar ? Colors.yellow : null,
+      onPressed: () async {
+        await starFeed(context);
+      },
+      icon: Icon(Icons.star),
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.feed.title),
-        actions: <Widget>[
-          IconButton(
-            onPressed: () async {
-              if (await canLaunch(widget.feed.link)) {
-                await launch(widget.feed.link);
-              }
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //     builder: (_) => DetailWebview(
-              //       feed: widget.feed,
-              //     ),
-              //   ),
-              // );
-            },
-            icon: Icon(Icons.open_in_new),
-          ),
-          IconButton(
-            key: Key("star_btn"),
-            color: isStar ? Colors.yellow : null,
-            onPressed: () async {
-              DatabaseProvider provider = Provider.of(context, listen: false);
-              if (isStar) {
-                // delete feed from db
-                await provider.deleteFeedFromDB(widget.feed);
-                setState(() {
-                  isStar = false;
-                });
-              } else {
-                // add feed to db
-                await provider.addFeedToDB(widget.feed);
-                setState(() {
-                  isStar = true;
-                });
-              }
-            },
-            icon: Icon(Icons.star),
-          )
-        ],
-      ),
       body: SlidingUpPanel(
         maxHeight: 200,
         minHeight: 80,
@@ -161,34 +170,56 @@ class _DetailPageState extends State<DetailPage> {
         color: theme.primaryColor,
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
-        body: Padding(
-          padding: const EdgeInsets.only(bottom: 200),
-          child: widget.feed.content != null
-              ? Markdown(
+        body: NestedScrollView(
+          controller: controller,
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            SliverAppBar(
+              leading: BackButton(
+                color: Colors.white,
+              ),
+              actions: <Widget>[starButton, openWebButton],
+              expandedHeight: 350,
+              floating: true,
+              pinned: true,
+              flexibleSpace: AnimatedOpacity(
+                duration: Duration(),
+                opacity: 1,
+                child: buildHeader(context),
+              ),
+              backgroundColor: !showAppbar ? Colors.transparent : appbarColor,
+            ),
+          ],
+          body: SingleChildScrollView(
+            physics: ClampingScrollPhysics(),
+            child: Column(
+              children: <Widget>[
+                MarkdownBody(
                   key: Key("news_body"),
                   onTapLink: (link) async {
                     await redirect(link, context);
                   },
                   selectable: false,
-                  styleSheet: MarkdownStyleSheet.fromTheme(theme.copyWith(
-                    textTheme: theme.textTheme.copyWith(
-                      bodyText1: theme.textTheme.bodyText1
-                          .copyWith(fontSize: baseFrontSize + 10),
-                      // display1: theme.textTheme.headline
-                      //     .copyWith(fontSize: baseFrontSize + 10),
-                      bodyText2: theme.textTheme.bodyText2
-                          .copyWith(fontSize: baseFrontSize),
-                    ),
-                  )).copyWith(
+                  styleSheet: markdownStyleSheet.copyWith(
                     tableCellsDecoration:
                         BoxDecoration(color: Colors.transparent),
                   ),
-                  data: widget.feed.content,
-                )
-              : WebView(
-                  initialUrl: widget.feed.link,
-                  javascriptMode: JavascriptMode.unrestricted,
+                  imageBuilder: (url) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: FadeInImage(
+                      width: MediaQuery.of(context).size.width,
+                      fit: BoxFit.cover,
+                      image: NetworkImage(url.toString()),
+                      placeholder: MemoryImage(kTransparentImage),
+                    ),
+                  ),
+                  data: content,
                 ),
+                SizedBox(
+                  height: 150,
+                )
+              ],
+            ),
+          ),
         ),
         panel: _panel(),
       ),
@@ -232,5 +263,85 @@ class _DetailPageState extends State<DetailPage> {
             )
           : Container(),
     );
+  }
+
+  ClipPath buildHeader(BuildContext context) {
+    return ClipPath(
+      clipper: HeaderClipper(),
+      child: Container(
+        height: appBarHeight,
+        color: appbarColor,
+        width: MediaQuery.of(context).size.width,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 50),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                SizedBox(
+                  height: 40,
+                ),
+                Text(
+                  widget.feed.publisher.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orangeAccent,
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  widget.feed.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  widget.feed.description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future starFeed(BuildContext context) async {
+    DatabaseProvider provider = Provider.of(context, listen: false);
+    if (isStar) {
+      // delete feed from db
+      await provider.deleteFeedFromDB(widget.feed);
+      setState(() {
+        isStar = false;
+      });
+    } else {
+      // add feed to db
+      await provider.addFeedToDB(widget.feed);
+      setState(() {
+        isStar = true;
+      });
+    }
+  }
+
+  void openWeb() async {
+    if (await canLaunch(widget.feed.link)) {
+      await launch(widget.feed.link);
+    }
   }
 }

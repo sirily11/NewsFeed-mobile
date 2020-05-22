@@ -25,24 +25,8 @@ class NewsList extends StatelessWidget {
         ? provider.currentSelectionIndex == 0
         : provider.prevLink == null && provider.currentSelectionIndex == 0;
 
-    return ListView.separated(
-      cacheExtent: 10000,
+    return ListView.builder(
       shrinkWrap: true,
-      separatorBuilder: (c, i) => showHeadline
-          ? i > 1
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 40, right: 40),
-                  child: Divider(
-                    thickness: 2,
-                  ),
-                )
-              : Container()
-          : Padding(
-              padding: const EdgeInsets.only(left: 40, right: 40),
-              child: Divider(
-                thickness: 2,
-              ),
-            ),
       key: Key("news_list"),
       controller: provider.scrollController,
       itemCount: showHeadline ? feeds.length + 2 : feeds.length,
@@ -50,13 +34,11 @@ class NewsList extends StatelessWidget {
         if (index == 0) {
           return HomeHeadlineList();
         }
-
         if (index == 1) {
           return SizedBox(
             height: 20,
           );
         }
-
         Feed feed = feeds[index - 2];
         return FeedRow(
           feed: feed,
