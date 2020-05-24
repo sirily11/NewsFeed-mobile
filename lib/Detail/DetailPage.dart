@@ -25,18 +25,12 @@ class DetailPage extends StatefulWidget {
 }
 
 class _DetailPageState extends State<DetailPage> {
-  final double appBarHeight = 350;
   final Color appbarColor = Color.fromRGBO(43, 29, 97, 1);
 
   bool isStar = false;
   double baseFrontSize = 20;
   bool isOpen = false;
   bool willOpenLink = true;
-
-  ScrollController controller = ScrollController();
-
-  bool showAppbar = false;
-  double extendedSize = 0;
 
   @override
   void initState() {
@@ -51,24 +45,6 @@ class _DetailPageState extends State<DetailPage> {
         }
       });
     }
-    controller.addListener(() {
-      if (controller.offset < 0) {
-        print("leff");
-      }
-      if (controller.offset > appBarHeight - 70) {
-        if (!showAppbar) {
-          setState(() {
-            showAppbar = true;
-          });
-        }
-      } else {
-        if (showAppbar) {
-          setState(() {
-            showAppbar = false;
-          });
-        }
-      }
-    });
   }
 
   Widget _panel() {
@@ -154,6 +130,14 @@ class _DetailPageState extends State<DetailPage> {
     );
 
     return Scaffold(
+      appBar: AppBar(
+        leading: BackButton(
+          color: Colors.white,
+        ),
+        actions: <Widget>[starButton, openWebButton],
+        backgroundColor: appbarColor,
+        elevation: 0,
+      ),
       body: SlidingUpPanel(
         maxHeight: 200,
         minHeight: 80,
@@ -170,30 +154,14 @@ class _DetailPageState extends State<DetailPage> {
         color: theme.primaryColor,
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
-        body: NestedScrollView(
-          controller: controller,
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            SliverAppBar(
-              leading: BackButton(
-                color: Colors.white,
-              ),
-              actions: <Widget>[starButton, openWebButton],
-              expandedHeight: 350,
-              floating: true,
-              pinned: true,
-              flexibleSpace: AnimatedOpacity(
-                duration: Duration(),
-                opacity: 1,
-                child: buildHeader(context),
-              ),
-              backgroundColor: !showAppbar ? Colors.transparent : appbarColor,
-            ),
-          ],
-          body: SingleChildScrollView(
-            physics: ClampingScrollPhysics(),
-            child: Column(
-              children: <Widget>[
-                MarkdownBody(
+        body: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
+          child: Column(
+            children: <Widget>[
+              buildHeader(context),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: MarkdownBody(
                   key: Key("news_body"),
                   onTapLink: (link) async {
                     await redirect(link, context);
@@ -214,11 +182,11 @@ class _DetailPageState extends State<DetailPage> {
                   ),
                   data: content,
                 ),
-                SizedBox(
-                  height: 150,
-                )
-              ],
-            ),
+              ),
+              SizedBox(
+                height: 250,
+              )
+            ],
           ),
         ),
         panel: _panel(),
@@ -269,18 +237,14 @@ class _DetailPageState extends State<DetailPage> {
     return ClipPath(
       clipper: HeaderClipper(),
       child: Container(
-        height: appBarHeight,
         color: appbarColor,
         width: MediaQuery.of(context).size.width,
         child: Padding(
-          padding: const EdgeInsets.only(top: 50),
+          padding: const EdgeInsets.only(top: 0),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                SizedBox(
-                  height: 40,
-                ),
                 Text(
                   widget.feed.publisher.name,
                   style: TextStyle(
@@ -313,6 +277,9 @@ class _DetailPageState extends State<DetailPage> {
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+                SizedBox(
+                  height: 40,
                 ),
               ],
             ),

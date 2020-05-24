@@ -17,6 +17,7 @@ class FeedProvider with ChangeNotifier {
   String commentsURL;
   String shareURL;
   String headlineURL;
+  String homeURL;
 
   Dio client;
   SharedPreferences preferences;
@@ -224,6 +225,7 @@ class FeedProvider with ChangeNotifier {
     commentsURL = "$base/comment/";
     shareURL = "$base/share/";
     headlineURL = "$base/headline/";
+    homeURL = "$base/hot-keyword/";
 
     if (shouldSet) {
       var prefs = this.preferences ?? await SharedPreferences.getInstance();

@@ -24,7 +24,7 @@ class FeedRow extends StatelessWidget {
           image: NetworkImage(
             feed.cover,
           ),
-          height: 200,
+          height: 300,
           width: MediaQuery.of(context).size.width,
           fit: BoxFit.cover,
         ),
@@ -34,7 +34,7 @@ class FeedRow extends StatelessWidget {
     return ClipPath(
       clipper: ImageClipper(),
       child: Container(
-        height: 200,
+        height: 300,
         color: Theme.of(context).primaryColor,
         child: Center(
           child: Text(
@@ -76,6 +76,9 @@ class FeedRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               _buildImage(useImage, context),
+              SizedBox(
+                height: 30,
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
@@ -84,6 +87,9 @@ class FeedRow extends StatelessWidget {
                         fontSize: 18,
                       ),
                 ),
+              ),
+              SizedBox(
+                height: 10,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),

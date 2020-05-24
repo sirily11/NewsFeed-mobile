@@ -11,13 +11,15 @@ class Headline {
   String content;
   String shortDescription;
   DateTime publishedTime;
+  String contentType;
 
   Headline(
       {this.title,
       this.cover,
       this.content,
       this.publishedTime,
-      this.shortDescription});
+      this.shortDescription,
+      this.contentType});
 
   factory Headline.fromJson(Map<String, dynamic> json) => Headline(
         title: json["title"],
@@ -25,6 +27,7 @@ class Headline {
         content: json["content"],
         shortDescription: json['short_description'],
         publishedTime: DateTime.parse(json["published_time"]),
+        contentType: json['content_type'],
       );
 
   Map<String, dynamic> toJson() => {

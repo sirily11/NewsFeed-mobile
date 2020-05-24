@@ -1,11 +1,9 @@
 import 'dart:math';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
-import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeadlineList extends StatelessWidget {
@@ -28,6 +26,7 @@ class HomeHeadlineList extends StatelessWidget {
         itemCount: headlines.length,
         itemBuilder: (c, i) {
           Feed headline = headlines[i];
+
           return InkWell(
             onTap: () async {
               Navigator.push(

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
+import 'package:newsfeed_mobile/Headline/HeadlineWebview.dart';
 import 'package:newsfeed_mobile/Headline/headline_detail.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
@@ -64,14 +65,7 @@ class _HeadlineListState extends State<HeadlineList> {
         Headline headline = provider.headlines[i];
         return InkWell(
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (c) => HeadlineDetail(
-                  headline: headline,
-                ),
-              ),
-            );
+            onTap(headline);
           },
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -128,6 +122,29 @@ class _HeadlineListState extends State<HeadlineList> {
     );
   }
 
+  void onTap(Headline headline) {
+    if (headline.contentType == "json_screen") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (c) => HeadlineDetail(
+            headline: headline,
+          ),
+        ),
+      );
+    } else if (headline.contentType == "html") {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (c) => HeadlineWebview(
+            url: headline.content,
+            title: headline.title,
+          ),
+        ),
+      );
+    }
+  }
+
   /// Build top carousel
   Widget buildCarousel(
       BuildContext context, List<Headline> headlines, int endIndex) {
@@ -143,14 +160,7 @@ class _HeadlineListState extends State<HeadlineList> {
             Headline headline = headlines[i];
             return InkWell(
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (c) => HeadlineDetail(
-                      headline: headline,
-                    ),
-                  ),
-                );
+                onTap(headline);
               },
               child: Column(
                 children: <Widget>[
