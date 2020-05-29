@@ -12,6 +12,7 @@ import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseProvider with ChangeNotifier {
+  bool hasInit = false;
   final String newsfeedDBPath = "feedDB";
   final String feedSourceDBPath = "feedSourceDB";
   Database newsFeedDB;
@@ -21,8 +22,6 @@ class DatabaseProvider with ChangeNotifier {
   DatabaseFactory dbFactory = databaseFactoryIo;
 
   DatabaseProvider({SharedPreferences preferences}) {
-    print("Start init database");
-    this.init().then((value) => print("Database init"));
     this.preferences = preferences;
   }
 
@@ -41,6 +40,8 @@ class DatabaseProvider with ChangeNotifier {
         this.newsFeedDB = await dbFactory.openDatabase(feedSourceDBPath);
       }
     }
+    this.hasInit = true;
+    notifyListeners();
   }
 
   Future<int> getSelectedFeedSourceId() async {

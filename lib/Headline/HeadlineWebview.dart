@@ -20,7 +20,6 @@ class _HeadlineWebviewState extends State<HeadlineWebview> {
   @override
   Widget build(BuildContext context) {
     FeedProvider provider = Provider.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: Text("${widget.title}"),

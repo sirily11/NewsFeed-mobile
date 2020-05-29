@@ -21,9 +21,7 @@ class NewsList extends StatelessWidget {
   /// Render list of news feed
   Widget _renderNewsList(BuildContext context) {
     FeedProvider provider = Provider.of(context);
-    bool showHeadline = provider.enableInfiniteScroll
-        ? provider.currentSelectionIndex == 0
-        : provider.prevLink == null && provider.currentSelectionIndex == 0;
+    bool showHeadline = provider.currentSelectionIndex == 0;
 
     return ListView.builder(
       shrinkWrap: true,

@@ -2,16 +2,16 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
+import 'package:newsfeed_mobile/models/HotKeyword.dart';
 import 'package:random_color/random_color.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedProvider with ChangeNotifier {
-  bool _enableInfiniteScroll = false;
-
   String baseURL;
   String redirectURL;
   String publisherURL;
+  String searchWelcomeURL;
   String loginURL;
   String signupURL;
   String commentsURL;
@@ -23,6 +23,8 @@ class FeedProvider with ChangeNotifier {
   SharedPreferences preferences;
 
   bool isLoading = false;
+  bool hasInit = false;
+
   String prevLink;
   String nextLink;
   String nextCommentLink;
@@ -51,11 +53,17 @@ class FeedProvider with ChangeNotifier {
     // For testing. Inject dependencies
     this.client = client ?? Dio();
     this.preferences = preferences ?? null;
-    initURL();
-    initSetting();
   }
 
-  void initURL() async {
+  Future<void> init() async {
+    await this.initURL();
+    await this.initSetting();
+    this.hasInit = true;
+    notifyListeners();
+  }
+
+  /// Setup url and then login
+  Future<void> initURL() async {
     SharedPreferences prefs =
         this.preferences ?? await SharedPreferences.getInstance();
     String baseURL = prefs.getString("baseURL");
@@ -67,26 +75,10 @@ class FeedProvider with ChangeNotifier {
   }
 
   /// init settings
-  void initSetting() async {
+  Future<void> initSetting() async {
     SharedPreferences prefs =
         this.preferences ?? await SharedPreferences.getInstance();
-    _enableInfiniteScroll = prefs.getBool("infinite_scroll") ?? false;
   }
-
-  set enableInfiniteScroll(bool val) {
-    _enableInfiniteScroll = val;
-    if (this.preferences != null) {
-      this.preferences.setBool("infinite_scroll", val);
-    } else {
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.setBool("infinite_scroll", val);
-      });
-    }
-
-    notifyListeners();
-  }
-
-  bool get enableInfiniteScroll => _enableInfiniteScroll;
 
   Future sendComment(Feed feed, String comment) async {
     try {
@@ -214,6 +206,17 @@ class FeedProvider with ChangeNotifier {
     }
   }
 
+  /// Fetch hotkeywords and feeds for search page
+  Future<List<HotKeyword>> fetchHotKeywords() async {
+    try {
+      var results = await this.client.get<List>(searchWelcomeURL);
+      return results.data.map((e) => HotKeyword.fromJson(e)).toList();
+    } catch (err) {
+      print("err: $err");
+      return [];
+    }
+  }
+
   /// Set up the url and store the data into shared preferences
   Future<void> setupURL(String base, {int key, bool shouldSet = true}) async {
     baseURL = "$base/news/";
@@ -226,6 +229,7 @@ class FeedProvider with ChangeNotifier {
     shareURL = "$base/share/";
     headlineURL = "$base/headline/";
     homeURL = "$base/hot-keyword/";
+    searchWelcomeURL = "$base/search-welcome";
 
     if (shouldSet) {
       var prefs = this.preferences ?? await SharedPreferences.getInstance();
@@ -354,8 +358,11 @@ class FeedProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
       if (scrollController != null && scrollController.hasClients) {
-        await scrollController.animateTo(0,
-            duration: Duration(milliseconds: 200), curve: Curves.bounceIn);
+        await scrollController.animateTo(
+          0,
+          duration: Duration(milliseconds: 200),
+          curve: Curves.bounceIn,
+        );
       }
     }
   }
@@ -402,17 +409,8 @@ class FeedProvider with ChangeNotifier {
           .toList();
       nextLink = response.data['next'];
       prevLink = response.data['previous'];
-      if (_enableInfiniteScroll) {
-        // ==== original code
-        feeds = List.from(feeds)
-          ..addAll(results.map((d) => Feed.fromJson(d)).toList());
-        // ==== end
-      } else {
-        // ==== Fix scrolling issue
-        feeds = results.map((d) => Feed.fromJson(d)).toList();
-        scrollController.jumpTo(0);
-        // ==== end fix
-      }
+      feeds = List.from(feeds)
+        ..addAll(results.map((d) => Feed.fromJson(d)).toList());
 
       isLoading = false;
       notifyListeners();

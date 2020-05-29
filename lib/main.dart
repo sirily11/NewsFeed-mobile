@@ -17,6 +17,7 @@ import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:provider/provider.dart';
 
 import 'Home/headline/headlineList.dart';
+import 'InitWidget/InitWidget.dart';
 
 void main() => runApp(MyApp());
 
@@ -39,84 +40,40 @@ class MyApp extends StatelessWidget {
       child: Builder(
         builder: (context) {
           var provider = Provider.of<HomeControlProvider>(context);
-          return MaterialApp(
-            initialRoute: "/",
-            routes: {
-              '/': (context) {
-                DatabaseProvider provider = Provider.of(context);
-                return HomePage();
+          return InitWidget(
+            child: MaterialApp(
+              initialRoute: "/",
+              routes: {
+                '/': (context) => HomePage(),
+                '/settings': (context) => SettingsPage(),
+                '/users': (context) => UserPage(),
+                '/news-source': (context) => NewsSourceList(),
+                '/color-settings': (context) => ColorSettingsPage(),
+                '/font-settings': (context) => FontSettingsPage()
               },
-              '/settings': (context) => SettingsPage(),
-              '/users': (context) => UserPage(),
-              '/news-source': (context) => NewsSourceList(),
-              '/color-settings': (context) => ColorSettingsPage(),
-              '/font-settings': (context) => FontSettingsPage()
-            },
-            title: 'Flutter Demo',
-            darkTheme: ThemeData.dark().copyWith(
-              primaryColor:
-                  provider.primaryColor ?? ThemeData.dark().primaryColor,
-              buttonColor: provider.tagColor ?? ThemeData.dark().buttonColor,
-              textTheme: ThemeData.dark().textTheme.apply(
-                    fontFamily:
-                        provider.fontSelections?.font?.bodyText1?.fontFamily,
-                  ),
+              title: 'Flutter Demo',
+              darkTheme: ThemeData.dark().copyWith(
+                primaryColor:
+                    provider.primaryColor ?? ThemeData.dark().primaryColor,
+                buttonColor: provider.tagColor ?? ThemeData.dark().buttonColor,
+                textTheme: ThemeData.dark().textTheme.apply(
+                      fontFamily:
+                          provider.fontSelections?.font?.bodyText1?.fontFamily,
+                    ),
+              ),
+              theme: ThemeData(
+                primaryColor: provider.primaryColor ?? ThemeData().primaryColor,
+                buttonColor: provider.tagColor ?? ThemeData().primaryColor,
+                textTheme: ThemeData().textTheme.apply(
+                      fontFamily:
+                          provider.fontSelections?.font?.bodyText1?.fontFamily,
+                    ),
+              ),
+              themeMode:
+                  provider.enableDarkmode ? ThemeMode.dark : ThemeMode.light,
             ),
-            theme: ThemeData(
-              primaryColor: provider.primaryColor ?? ThemeData().primaryColor,
-              buttonColor: provider.tagColor ?? ThemeData().primaryColor,
-              textTheme: ThemeData().textTheme.apply(
-                    fontFamily:
-                        provider.fontSelections?.font?.bodyText1?.fontFamily,
-                  ),
-            ),
-            themeMode:
-                provider.enableDarkmode ? ThemeMode.dark : ThemeMode.light,
           );
         },
-      ),
-    );
-  }
-}
-
-class TestView extends StatefulWidget {
-  @override
-  _TestViewState createState() => _TestViewState();
-}
-
-class _TestViewState extends State<TestView> {
-  final Publisher publisher = Publisher(id: 1, name: "a");
-
-  @override
-  Widget build(BuildContext context) {
-    FeedProvider feedProvider = Provider.of(context);
-    print(feedProvider.feeds.length);
-    return Scaffold(
-      appBar: AppBar(),
-      body: EasyRefresh(
-        firstRefresh: true,
-        onRefresh: ()async{
-          await feedProvider.fetchPublishers();
-          await feedProvider.fetchFeeds();
-        },
-        onLoad: () async {
-          await feedProvider.fetchMore();
-
-        },
-        child: ListView(
-          shrinkWrap: true,
-          children: <Widget>[
-            HomeHeadlineList(),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: feedProvider.feeds.length,
-              itemBuilder: (c, i) => FeedRow(
-                feed: feedProvider.feeds[i],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

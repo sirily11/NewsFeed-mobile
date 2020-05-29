@@ -11,17 +11,16 @@ import 'package:newsfeed_mobile/Home/parts/CustomAppbar.dart';
 import 'package:newsfeed_mobile/Home/HelpCardList.dart';
 import 'package:newsfeed_mobile/Home/TwoColumnNewsList.dart';
 import 'package:newsfeed_mobile/Home/parts/drawer.dart';
+import 'package:newsfeed_mobile/SearchWelcome/SearchWelcomePage.dart';
 import 'package:newsfeed_mobile/StarFeed/StarFeedList.dart';
 import 'package:newsfeed_mobile/master-detail/master_detail_container.dart';
-import 'package:newsfeed_mobile/models/DatabaseProvider.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
+import 'package:newsfeed_mobile/models/HotKeyword.dart';
 import 'package:newsfeed_mobile/utils/utils.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 import 'package:provider/provider.dart';
-import 'package:responsive_scaffold/responsive_scaffold.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 const kTabletWidth = 720.0;
 
@@ -45,10 +44,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     await provider.fetchFeeds();
     if (publishers != null) {
       setState(() {
-        tabController = TabController(vsync: this, length: publishers.length);
+        tabController = TabController(
+          initialIndex: provider.currentSelectionIndex,
+          vsync: this,
+          length: publishers.length,
+        );
       });
     }
-
     tabController?.addListener(() async {
       if (tabController.indexIsChanging) {
         await provider.setCurrentSelectionIndex(tabController.index);
@@ -100,14 +102,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return LayoutBuilder(
       builder: (context, constrains) {
+        // Build mobile
         if (Platform.isIOS ||
             Platform.isAndroid ||
             kIsWeb && constrains.maxWidth < kTabletWidth) {
           return Scaffold(
             drawer: DrawerWidget(),
-            floatingActionButton: FloatingActionButton(child: Icon(Icons.file_upload), onPressed: (){
-              provider.backToTop();
-            },),
             key: provider.key,
             appBar: buildCustomAppBar(context),
             body: AnimatedSwitcher(
@@ -146,10 +146,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     FeedProvider provider = Provider.of(context);
     HomeControlProvider homeControlProvider = Provider.of(context);
     return CustomAppBar(
-      onTap: () {
-        if (homeControlProvider.currentIndex == 0) {
-          provider.backToTop();
-        }
+      onTap: () async {
+        await provider.backToTop();
       },
       appBar: AppBar(
         actions: <Widget>[
@@ -201,7 +199,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   BottomNavigationBar buildBottomNavigationBar() {
-    FeedProvider provider = Provider.of(context);
     HomeControlProvider homeControlProvider = Provider.of(context);
     return BottomNavigationBar(
       currentIndex: homeControlProvider.currentIndex,
@@ -302,9 +299,7 @@ class NewsSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    return Center(
-      child: Text("Press Search"),
-    );
+    return SearchWelcomePage();
   }
 
   Widget _buildListResults(List<Feed> feeds) {

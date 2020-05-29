@@ -14,26 +14,6 @@ class MockFeedProvider extends Mock implements FeedProvider {}
 
 void main() {
   group("Settings page", () {
-    testWidgets("Enable infinite scroll", (tester) async {
-      var provider = FeedProvider(client: MockClient());
-      provider.enableInfiniteScroll = true;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (_) => provider,
-              )
-            ],
-            child: SettingsPage(),
-          ),
-        ),
-      );
-      expect(provider.enableInfiniteScroll, true);
-      await tester.tap(find.byKey(Key("enable_infiniteScroll")));
-      expect(provider.enableInfiniteScroll, false);
-    });
-
     testWidgets("Test news source list", (tester) async {
       DatabaseProvider databaseProvider = MockDatabaseProvider();
       FeedProvider feedProvider = MockFeedProvider();

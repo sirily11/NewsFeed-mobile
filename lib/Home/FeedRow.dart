@@ -36,11 +36,15 @@ class FeedRow extends StatelessWidget {
       child: Container(
         height: 300,
         color: Theme.of(context).primaryColor,
-        child: Center(
-          child: Text(
-            feed.publisher.name,
-            style: Theme.of(context).textTheme.headline5,
-          ),
+        child: Stack(
+          children: <Widget>[
+            Center(
+              child: Text(
+                feed.publisher.name,
+                style: Theme.of(context).textTheme.headline5,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -61,6 +65,7 @@ class FeedRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(13),
         ),
         child: InkWell(
+          onLongPress: () {},
           onTap: () {
             Navigator.push(
               context,
@@ -111,7 +116,7 @@ class FeedRow extends StatelessWidget {
                   ),
                 ),
               Padding(
-                padding: const EdgeInsets.only(left: 45, bottom: 20),
+                padding: const EdgeInsets.only(left: 45, bottom: 10),
                 child: Text(
                   getTime(feed.postedTime),
                   style: Theme.of(context)
@@ -119,7 +124,13 @@ class FeedRow extends StatelessWidget {
                       .subtitle2
                       .copyWith(fontSize: 15),
                 ),
-              )
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 10, bottom: 10),
+                child: TagsWidget(
+                  tags: feed.keywords,
+                ),
+              ),
             ],
           ),
         ),
@@ -138,6 +149,7 @@ class TagsWidget extends StatelessWidget {
     return Container(
       height: 25,
       child: ListView(
+        shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         children: tags
             .map(
