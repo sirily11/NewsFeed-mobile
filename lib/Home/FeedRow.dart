@@ -87,7 +87,7 @@ class FeedRow extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  feed.title,
+                  "${feed.title ?? ""}",
                   style: Theme.of(context).textTheme.headline6.copyWith(
                         fontSize: 18,
                       ),
@@ -99,7 +99,7 @@ class FeedRow extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
                 child: Text(
-                  feed.description,
+                  "${feed.description ?? ""}",
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -42,6 +42,7 @@ class MyApp extends StatelessWidget {
           var provider = Provider.of<HomeControlProvider>(context);
           return InitWidget(
             child: MaterialApp(
+              debugShowCheckedModeBanner: false,
               initialRoute: "/",
               routes: {
                 '/': (context) => HomePage(),
