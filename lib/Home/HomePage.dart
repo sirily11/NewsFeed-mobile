@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
 import 'package:newsfeed_mobile/Headline/headline.dart';
-import 'package:newsfeed_mobile/Home/headline/NewsList.dart';
+import 'package:newsfeed_mobile/Home/NewsList.dart';
 import 'package:newsfeed_mobile/Home/parts/CustomAppbar.dart';
 import 'package:newsfeed_mobile/Home/HelpCardList.dart';
 import 'package:newsfeed_mobile/Home/TwoColumnNewsList.dart';

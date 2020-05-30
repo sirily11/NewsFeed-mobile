@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:newsfeed_mobile/Detail/DetailPage.dart';
@@ -14,24 +15,10 @@ class FeedRow extends StatelessWidget {
 
   FeedRow({@required this.feed});
 
-  Widget _buildImage(bool useImage, BuildContext context) {
-    HomeControlProvider homeControlProvider = Provider.of(context);
-    if (useImage) {
-      return ClipPath(
-        clipper: ImageClipper(),
-        child: FadeInImage(
-          placeholder: MemoryImage(kTransparentImage),
-          image: NetworkImage(
-            feed.cover,
-          ),
-          height: 300,
-          width: MediaQuery.of(context).size.width,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
+  /// Build large publisher name
+  Widget _buildLargePublisher(BuildContext context) {
     return ClipPath(
+      key: Key("feed-publisher"),
       clipper: ImageClipper(),
       child: Container(
         height: 300,
@@ -48,6 +35,28 @@ class FeedRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildImage(bool useImage, BuildContext context) {
+    HomeControlProvider homeControlProvider = Provider.of(context);
+    if (useImage) {
+      return ClipPath(
+        clipper: ImageClipper(),
+        child: CachedNetworkImage(
+          key: Key("feed-image"),
+          placeholder: (context, url) => Center(
+            child: CircularProgressIndicator(),
+          ),
+          errorWidget: (context, url, error) => _buildLargePublisher(context),
+          imageUrl: feed.cover,
+          height: 300,
+          width: MediaQuery.of(context).size.width,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    return _buildLargePublisher(context);
   }
 
   @override
@@ -109,6 +118,7 @@ class FeedRow extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 10, left: 45),
                   child: Text(
                     feed.publisher.name,
+                    key: Key("small-feed-publisher"),
                     style: Theme.of(context)
                         .textTheme
                         .subtitle2

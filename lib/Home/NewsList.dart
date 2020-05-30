@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyrefresh/easy_refresh.dart';
-import 'package:flutter_easyrefresh/material_header.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:newsfeed_mobile/Detail/DetailPage.dart';
-import 'package:newsfeed_mobile/Headline/headline.dart';
 import 'package:newsfeed_mobile/Home/FeedRow.dart';
 import 'package:newsfeed_mobile/Home/headline/headlineList.dart';
 import 'package:newsfeed_mobile/models/Feed.dart';
 import 'package:newsfeed_mobile/models/FeedProvider.dart';
-import 'package:newsfeed_mobile/models/HomeControlProvider.dart';
 import 'package:provider/provider.dart';
 
 class NewsList extends StatelessWidget {
@@ -52,6 +46,7 @@ class NewsList extends StatelessWidget {
 
     if (provider.isError) {
       return Container(
+        key: Key("error-refresh"),
         width: width,
         child: Center(
           child: Row(

@@ -8,7 +8,7 @@ import 'package:newsfeed_mobile/models/FeedProvider.dart';
 import 'package:newsfeed_mobile/models/FeedSource.dart';
 import 'package:provider/provider.dart';
 
-import 'widget_test.dart';
+import 'news_list_test.dart';
 
 class MockFeedProvider extends Mock implements FeedProvider {}
 

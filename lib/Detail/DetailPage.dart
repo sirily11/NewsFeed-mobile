@@ -268,7 +268,7 @@ class _DetailPageState extends State<DetailPage> {
                   height: 10,
                 ),
                 Text(
-                  widget.feed.description,
+                  "${widget.feed.description}",
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
