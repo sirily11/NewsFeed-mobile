@@ -137,7 +137,7 @@ class _HeadlineListState extends State<HeadlineList> {
         context,
         MaterialPageRoute(
           builder: (c) => HeadlineWebview(
-            url: headline.content,
+            url: "${headline.content}",
             title: headline.title,
           ),
         ),

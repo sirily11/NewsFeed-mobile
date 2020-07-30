@@ -1,3 +1,5 @@
+# @format
+
 name: newsfeed_mobile
 description: A new Flutter project.
 
@@ -48,6 +50,7 @@ dependencies:
   json_screen:
   carousel_slider: ^1.4.1
   google_fonts: ^0.3.10
+  flutter_html: ^1.0.0
   photo_view: ^0.9.2
   shared_preferences_macos:
 

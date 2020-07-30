@@ -81,11 +81,7 @@ class NewsList extends StatelessWidget {
         await provider.fetchMore();
       },
       onRefresh: () async {
-        if (provider.prevLink == null) {
-          await refetch();
-        } else {
-          await provider.fetchPrevious();
-        }
+        await refetch();
       },
       child: _renderNewsList(context),
     );
